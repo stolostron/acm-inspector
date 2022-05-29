@@ -15,6 +15,11 @@ This is very much work in progress.
 - clone this git repo
 - cd src/supervisor
 - connect to your OpenShift cluster that runs RHACM by `oc login`. You will need a kubeadmin access.
+- export these 2 environment variables:
+    ```
+    export PROM_URL="https://prometheus-k8s-openshift-monitoring.apps.xxx.yyy.com/"
+    export API_TOKEN="sha256~xxxx"
+    ```
 - run `python entry.py`
 You will get an output like :
 Note: `True` in the ouput means good status.
