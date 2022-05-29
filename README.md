@@ -1,15 +1,15 @@
 # acm-inspector
 
 ## Motivation
-Red Hat Advanced Cluster Management (RHACM) is a product that uses several operators, containers, stateful sets etc to managed a fleet of clusters. There is a must-gather script that can gather data from an installation that is having issues and that data can be uploaded for Red Hat Engineers to debug. However there is a not an easy way by which you can determine the health of RHACM as is now. And if we did that, perhaps problems could be resolved much faster. This project attempts to solve that problem. If you run `python entry.py` you will get a read out of the current state of RHACM.
+Red Hat Advanced Cluster Management (RHACM) is a product that uses several operators, containers, stateful sets etc to managed a fleet of clusters. There is a must-gather script that can gather data from an installation that is having issues and that data can be uploaded for Red Hat Engineers to debug. However it is not easy to determine the current health of RHACM. And if we could to it, perhaps problems could be resolved much faster. This project attempts to solve that problem. If you run `python entry.py` you will get a read out of the current state of RHACM.
 
 ## Work-in-Progress
 This is very much work in progress. 
-- We have begun by looking at a few Key operators of RHACM and grabbing the health from those. 
-- We have also gather current snapshot of a few prometheus metrics to grab the health of the containers, API Server, etcd. 
-- We also gather current snapshot of Prometheus alerts firing on the Hub Server 
-- We will continue to expand by looking at the entire set of RHACM operators.
-- The next bold step could be recommending an action to solve the problem.
+- We have begun by looking at a few key operators of RHACM and grabbing the health of those. 
+- We have also gathered current snapshot of a few prometheus metrics to check the health of the containers, API Server, etcd. 
+- We also gather current snapshot of Prometheus alerts firing on the Hub Server.
+- We will continue to expand by looking at the entire set of RHACM operators (MCO, ManifestWork, Placement etc).
+- The next bold step could be recommending an action to solve the problem by drawing inference from the output.
 
 ## To run this
 - clone this git repo
