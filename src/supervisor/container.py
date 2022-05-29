@@ -17,7 +17,8 @@ def checkACMContainerStatus():
     status=etcdDBSize(pc)
     status=etcdLeaderChanges(pc)
     status=majorAlertCount(pc)
-    #TODO: Add API_SERVER Health Check
+    status=apiServerLatency(pc)
+    
 
     print(" ============ ACM Pod/Container Health Check  - ", "PLEASE CHECK to see if the results are concerning!! ============")
     return status
@@ -101,4 +102,16 @@ def majorAlertCount(pc):
     status=True
     return status    
 
+def apiServerLatency(pc):
+
+    apiserver_latency_data = pc.custom_query('topk(10,histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le,resource)))')
+
+    apiserver_latency_data_df = MetricSnapshotDataFrame(apiserver_latency_data);
+    apiserver_latency_data_df["value"]=apiserver_latency_data_df["value"].astype(float)
+    apiserver_latency_data_df.rename(columns={"value": "APIServer99PctLatency"}, inplace = True)
+    print(apiserver_latency_data_df[['resource','APIServer99PctLatency']])
+    print("=============================================")
+    
+    status=True
+    return status   
 
