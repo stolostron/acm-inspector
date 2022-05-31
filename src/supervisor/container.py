@@ -25,6 +25,8 @@ def checkACMContainerStatus():
 
 def restartCount(pc):
 
+    print("Checking if ACM pods are restarting frequently")
+
     restart_data = pc.custom_query('sum(kube_pod_container_status_restarts_total{namespace=~"open-cluster-managemen.+"}) by (namespace,container) >0')
     restart_data_df = MetricSnapshotDataFrame(restart_data);
     restart_data_df["value"]=restart_data_df["value"].astype(int)
@@ -36,20 +38,26 @@ def restartCount(pc):
     return status    
 
 def checkPV(pc):
+    try:
+        print("Checking amount of percent free space left in PVs needed by ACM")
+        
+        pv_data = pc.custom_query('sum by (persistentvolumeclaim) ((kubelet_volume_stats_available_bytes{namespace="open-cluster-management-observability"})*100/(kubelet_volume_stats_capacity_bytes{namespace="open-cluster-management-observability"}))')
+        pv_data_df = MetricSnapshotDataFrame(pv_data);
+        pv_data_df["value"]=pv_data_df["value"].astype(float)
+        pv_data_df.rename(columns={"value": "FreeSpaceAvailPct"}, inplace = True)
+        print(pv_data_df[['persistentvolumeclaim','FreeSpaceAvailPct']])
+        print("==============================================")
+    except Exception as e:
+        #print("Failure: ",e)     
     
-    pv_data = pc.custom_query('sum by (persistentvolumeclaim) ((kubelet_volume_stats_available_bytes{namespace="open-cluster-management-observability"})*100/(kubelet_volume_stats_capacity_bytes{namespace="open-cluster-management-observability"}))')
-    pv_data_df = MetricSnapshotDataFrame(pv_data);
-    pv_data_df["value"]=pv_data_df["value"].astype(float)
-    pv_data_df.rename(columns={"value": "AvailPct"}, inplace = True)
-    print(pv_data_df[['persistentvolumeclaim','AvailPct']])
-    print("==============================================")
-     
     status=True
     return status   
 
 def checkContainerCount(pc):
     
     #start_time, end_time,step = helperTime()
+
+    print("Checking number of Pods running in the ACM namespaces")
 
     container_data = pc.custom_query('sum by (namespace) (kube_pod_info{namespace=~"open-cluster-managemen.+"})')
 
@@ -64,6 +72,7 @@ def checkContainerCount(pc):
 
 def etcdDBSize(pc):
 
+    print("Checking etcd Space consumption in MB")
     etcd_data = pc.custom_query('etcd_mvcc_db_total_size_in_bytes{job="etcd"}/(1024*1024)')
 
     etcd_data_df = MetricSnapshotDataFrame(etcd_data);
@@ -78,6 +87,7 @@ def etcdDBSize(pc):
 
 def etcdLeaderChanges(pc):
 
+    print("Checking leader election counts in etcd")
     etcd_leader_data = pc.custom_query('changes(etcd_server_leader_changes_seen_total{job="etcd"}[1d])')
 
     etcd_leader_data_df = MetricSnapshotDataFrame(etcd_leader_data);
@@ -92,6 +102,7 @@ def etcdLeaderChanges(pc):
 
 def majorAlertCount(pc):
 
+    print("Checking all alerts currently firing under Hub Cluster that have triggered more than once")
     alert_data = pc.custom_query('sum by (alertname) (ALERTS{alertstate="firing"}) >1')
 
     alert_data_df = MetricSnapshotDataFrame(alert_data);
@@ -103,6 +114,8 @@ def majorAlertCount(pc):
     return status    
 
 def apiServerLatency(pc):
+
+    print("99th Percentile Latency of API calls to resources - Top 10")
 
     apiserver_latency_data = pc.custom_query('topk(10,histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le,resource)))')
 
