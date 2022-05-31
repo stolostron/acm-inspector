@@ -1,7 +1,7 @@
 # acm-inspector
 
 ## Motivation
-Red Hat Advanced Cluster Management (RHACM) is a product that uses several operators, containers, stateful sets etc to managed a fleet of clusters. There is a must-gather script that can gather data from an installation that is having issues and that data can be uploaded for Red Hat Engineers to debug. However it is not easy to determine the current health of RHACM. And if we could to it, perhaps problems could be resolved much faster. This project attempts to solve that problem. If you run `python entry.py` you will get a read out of the current state of RHACM.
+Red Hat Advanced Cluster Management (RHACM) is a product that uses several operators, containers, stateful sets etc to managed a fleet of clusters. There is a [must-gather](https://github.com/stolostron/must-gather) script that can gather data from an installation that is having issues and that data can be uploaded for Red Hat Engineers to debug. However it is not easy to determine the current health of RHACM. And if we could to it, perhaps problems could be resolved much faster. This project attempts to solve that problem. If you run `python entry.py` you will get a read out of the current state of RHACM.
 
 ## Work-in-Progress
 This is very much work in progress. 
@@ -15,11 +15,7 @@ This is very much work in progress.
 - clone this git repo
 - cd src/supervisor
 - connect to your OpenShift cluster that runs RHACM by `oc login`. You will need a kubeadmin access.
-- export these 2 environment variables:
-    ```
-    export PROM_URL="https://prometheus-k8s-openshift-monitoring.apps.xxx.yyy.com/"
-    export API_TOKEN="sha256~xxxx"
-    ```
+- install dependencies `pip install -r requirements.txt`
 - run `python entry.py`
 You will get an output like :
 Note: `True` in the ouput means good status.
