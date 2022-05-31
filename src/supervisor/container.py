@@ -103,14 +103,18 @@ def etcdLeaderChanges(pc):
 
 def majorAlertCount(pc):
 
-    print("Checking all alerts currently firing under Hub Cluster that have triggered more than once")
-    alert_data = pc.custom_query('sum by (alertname) (ALERTS{alertstate="firing"}) >1')
+    try:
+        print("Checking all alerts currently firing under Hub Cluster that have triggered more than once")
+        alert_data = pc.custom_query('sum by (alertname) (ALERTS{alertstate="firing"}) >1')
 
-    alert_data_df = MetricSnapshotDataFrame(alert_data);
-    alert_data_df["value"]=alert_data_df["value"].astype(int)
-    print(alert_data_df[['alertname','value']])
-    print("=============================================")
-    
+        alert_data_df = MetricSnapshotDataFrame(alert_data);
+        alert_data_df["value"]=alert_data_df["value"].astype(int)
+        print(alert_data_df[['alertname','value']])
+        print("=============================================")
+    except Exception as e:
+        #print("Failure: ",e)  
+        pass   
+
     status=True
     return status    
 
