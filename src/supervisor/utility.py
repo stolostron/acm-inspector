@@ -1,15 +1,24 @@
 import os
 from prometheus_api_client import *
+from kubernetes import client, config
 import sys
 import datetime
 
 def promConnect():
     try:
-        prom_url = os.getenv('PROM_URL')
-        api_token = os.getenv('API_TOKEN')
+        # Get the Prometheus URL from the Route object.
+        custom_object_api = client.CustomObjectsApi()
+        promRoute = custom_object_api.get_namespaced_custom_object(
+             "route.openshift.io", "v1", "openshift-monitoring", "routes", "prometheus-k8s")
+        prom_url = "https://{}/".format(promRoute['spec']['host'])
+
+        # Get Kubernetes API token.
+        c = client.Configuration()
+        config.load_config(client_configuration = c)
+        api_token = c.api_key['authorization']
 
         #connects to prometheus
-        pc = PrometheusConnect(url=prom_url, headers={"Authorization": "Bearer {}".format(api_token)}, disable_ssl=True)
+        pc = PrometheusConnect(url=prom_url, headers={"Authorization": "{}".format(api_token)}, disable_ssl=True)
     
     except Exception as e:
         print("Failure: ",e) 
