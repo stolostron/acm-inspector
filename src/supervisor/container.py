@@ -48,7 +48,8 @@ def checkPV(pc):
         print(pv_data_df[['persistentvolumeclaim','FreeSpaceAvailPct']])
         print("==============================================")
     except Exception as e:
-        #print("Failure: ",e)     
+        #print("Failure: ",e)  
+        pass   
     
     status=True
     return status   
