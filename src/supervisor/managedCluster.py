@@ -1,9 +1,15 @@
 from ast import And
 from kubernetes import client, config
+from colorama import Fore, Back, Style
 import sys
 
 def checkManagedClusterStatus(debug=False):
+    
+    print(Back.LIGHTYELLOW_EX+"")
+    print("************************************************************************************************")
     print("Managed Cluster Health Check")
+    print("************************************************************************************************")
+    print(Style.RESET_ALL)
     status = True
     mclusters=[]
     summaryStatus= True
@@ -63,7 +69,11 @@ def checkManagedClusterStatus(debug=False):
             if debug: print(acluster)
             #print("++++++++++++++++++++++++++++++++++++++++++++++")
         print(mclusters)
-        print(" ============ Managed Cluster Health Check passed ============ ", summaryStatus)
+        print(Back.LIGHTYELLOW_EX+"")
+        print("************************************************************************************************")
+        print("Managed Cluster Health Check passed ============ ", summaryStatus)
+        print("************************************************************************************************")
+        print(Style.RESET_ALL)
 
         #for x in mclusters:
         #    checkManagedClusterAddonStatus(x)
@@ -73,8 +83,9 @@ def checkManagedClusterStatus(debug=False):
                     checkManagedClusterAddonStatus(v,debug)
     
     except Exception as e:
-        print("Failure: ",e) 
+        print(Fore.RED+"Failure: ",e) 
         sys.exit("Cluster may be down, or credentials may be wrong, or simply not connected")   
+        print(Style.RESET_ALL)
     return status
 
 
@@ -116,8 +127,13 @@ def checkManagedClusterAddonStatus(managedCluster, debug=False):
             
             
     except Exception as e:
-        print("Failure: ",e)
+        print(Fore.RED+"Failure: ",e)
         sys.exit("Cluster may be down, or credentials may be wrong, or simply not connected")
+        print(Style.RESET_ALL)
     print(addonCluster)
-    print(" ============ Managed Cluster Addon Health Check passed ============ ", summaryStatus)
+    print(Back.LIGHTYELLOW_EX+"")
+    print("************************************************************************************************")
+    print(" Managed Cluster Addon Health Check passed ============ ", summaryStatus)
+    print("************************************************************************************************")
+    print(Style.RESET_ALL)
     return status

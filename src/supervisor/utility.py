@@ -5,12 +5,26 @@ import sys
 import datetime
 
 def promConnect():
+
+    tsdb = sys.argv[1]
+    #print(f"Arguments of the script : ", tsdb)
+
     try:
-        # Get the Prometheus URL from the Route object.
-        custom_object_api = client.CustomObjectsApi()
-        promRoute = custom_object_api.get_namespaced_custom_object(
-             "route.openshift.io", "v1", "openshift-monitoring", "routes", "prometheus-k8s")
-        prom_url = "https://{}/".format(promRoute['spec']['host'])
+        if tsdb == "prom" :
+            # Get the Prometheus URL from the Route object.
+            custom_object_api = client.CustomObjectsApi()
+            promRoute = custom_object_api.get_namespaced_custom_object(
+                "route.openshift.io", "v1", "openshift-monitoring", "routes", "thanos-querier")
+            prom_url = "https://{}".format(promRoute['spec']['host'])
+            print("Connecting to ACM Hub at URL: ",prom_url)
+        else:
+            # Get the Prometheus URL from the Route object.
+            custom_object_api = client.CustomObjectsApi()
+            promRoute = custom_object_api.get_namespaced_custom_object(
+                "route.openshift.io", "v1", "open-cluster-management-observability", "routes", "rbac-query-proxy")
+            #if using observability, use below
+            prom_url = "https://{}/".format(promRoute['spec']['host'])
+            print("Connecting to ACM Hub at URL: ",prom_url)    
 
         # Get Kubernetes API token.
         c = client.Configuration()

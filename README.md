@@ -1,23 +1,35 @@
 # acm-inspector
 
 ## Motivation
-Red Hat Advanced Cluster Management (RHACM) is a product that uses several operators, containers, stateful sets etc to managed a fleet of clusters. There is a [must-gather](https://github.com/stolostron/must-gather) script that can gather data from an installation that is having issues and that data can be uploaded for Red Hat Engineers to debug. However it is not easy to determine the current health of RHACM. And if we could to it, perhaps problems could be resolved much faster. This project attempts to solve that problem. If you run `python entry.py` you will get a read out of the current state of RHACM.
+Red Hat Advanced Cluster Management (RHACM) is a product that uses several operators, containers, stateful sets etc to managed a fleet of clusters. There is a [must-gather](https://github.com/stolostron/must-gather) script that can gather data from an installation that is having issues and that data can be uploaded for Red Hat Engineers to debug. However it is not easy to determine the current health of RHACM. And if we could to it, perhaps problems could be resolved much faster. This project attempts to solve that problem. If you run `python entry.py prom` you will get a read out of the current state of RHACM.
+There is an equally string secondary motivation that has come up lately. We need an elegant way to collect existing data from a Hub Server that gives an idea of how stressed the system is. From this data, we should be able to infer how much more managed clusters will this Hub cluster be able to handle. 
 
 ## Work-in-Progress
 This is very much work in progress. 
+- As of now, the argument it supports is just `prom`. This stands for in-cluster Prometheus on Hub. We will extend it to ACM Observability Thanos in very near future. 
 - We have begun by looking at a few key operators of RHACM and grabbing the health of those. 
 - We have also gathered current snapshot of a few prometheus metrics to check the health of the containers, API Server, etcd. 
 - We also gather current snapshot of Prometheus alerts firing on the Hub Server.
 - We will continue to expand by looking at the entire set of RHACM operators (MCO, ManifestWork, Placement etc).
-- The next bold step could be recommending an action to solve the problem by drawing inference from the output.
+- The next few bold steps could be
 
+      - recommending an action to solve the problem by drawing inference from the output. 
+      - inferring if the current size of the Hub cluster can handle more managed clusters.
+      - inferring a pattern of usage of the Hub from which we could infer a new Hub size if the number of managed clusters increased from say x to 10x (10 to 300)
+
+## Note
+Connection to in-cluster Prometheus works from OCP 4.10 upwards. That is because of route changes in open-shift-monitoring namespace.
 ## To run this
 - clone this git repo
 - cd src/supervisor
 - connect to your OpenShift cluster that runs RHACM by `oc login`. You will need a kubeadmin access.
 - install dependencies `pip install -r requirements.txt`
-- run `python entry.py`
-You will get an output like :
+- run `python entry.py prom`
+
+### Result
+1. `Historical` metric results are created as png files under `output` directory
+2. `Current` data is printed out in the screen as below:
+
 Note: `True` in the ouput means good status.
 ```
 Starting to Run ACM Health Check -  2022-05-29 09:10:17.130964
