@@ -1,4 +1,5 @@
 from kubernetes import client, config
+from colorama import Fore, Back, Style
 import sys
 
 def checkNodeStatus(debug=False):
@@ -32,8 +33,13 @@ def checkNodeStatus(debug=False):
             if debug: nodeList['spec']=node.spec
             print(nodeList) 
 
-        print(" ============ Node Health Check passed ============ ", status)
+        print(Back.LIGHTYELLOW_EX+"")
+        print("************************************************************************************************")
+        print(" Node Health Check passed ============ ", status)
+        print("************************************************************************************************")
+        print(Style.RESET_ALL)
     except Exception as e:
-        print("Failure: ",e)
+        print(Fore.RED+"Failure: ",e)
         sys.exit("Cluster may be down, or credentials may be wrong, or simply not connected")
+        print(Style.RESET_ALL)
     return status

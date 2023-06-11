@@ -1,0 +1,1 @@
+This directory will be empty in Git. When the code is run on the user terminal, this will have png files that shows the metric trend data. Please do not check the pngs in the repo
