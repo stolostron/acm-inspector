@@ -57,6 +57,7 @@ def etcdDBSize(pc,startTime, endTime, step):
         etcd_data_trend_df =  etcd_data_trend_df.pivot( columns='instance',values='value')
         etcd_data_trend_df.plot(title="Etcd DB size in MB")
         plt.savefig('../../output/etcd-size.png')
+        saveCSV(etcd_data_trend_df,'etcd-size')
 
         """ 
         ax=df.plot(title="Node (Worker) CPU Utilisation Percent Rate")
@@ -98,6 +99,7 @@ def etcdDBSizeInUse(pc,startTime, endTime, step):
         etcd_data_trend_df =  etcd_data_trend_df.pivot( columns='instance',values='value')
         etcd_data_trend_df.plot(title="Etcd space consumed in MB")
         plt.savefig('../../output/etcd-space-consumed.png')
+        saveCSV(etcd_data_trend_df,'etcd-space-consumed')
     except Exception as e:
         print(Fore.RED+"Error in getting etcd space in use in MB: ",e)
         print(Style.RESET_ALL)
@@ -132,6 +134,7 @@ def etcdLeaderChanges(pc,startTime, endTime, step):
         etcd_data_trend_df =  etcd_data_trend_df.pivot( columns='instance',values='value')
         etcd_data_trend_df.plot(title="Etcd leader election counts")
         plt.savefig('../../output/etcd-leader-election-count.png')
+        saveCSV(etcd_data_trend_df,'etcd-leader-election-count')
     except Exception as e:
         print(Fore.RED+"Error in getting leader election counts in etcd: ",e)
         print(Style.RESET_ALL)
