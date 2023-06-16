@@ -58,6 +58,7 @@ def clusterMemUsed(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         node_cpu_trend_df.plot(title="Cluster Memory usage GB")
         plt.savefig('../../output/cluster-mem-usage.png')
+        saveCSV(node_cpu_trend_df,"cluster-mem-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting memory for cluster: ",e)  
@@ -92,6 +93,7 @@ def clusterMemPctUsed(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         node_cpu_trend_df.plot(title="Cluster Memory Pct usage")
         plt.savefig('../../output/cluster-mem-pct-usage.png')
+        saveCSV(node_cpu_trend_df,"cluster-mem-pct-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting memory pct for cluster: ",e)    
@@ -127,6 +129,7 @@ def nodeMemUsage(pc,startTime, endTime, step):
         node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         node_cpu_trend_df.plot(title="Memory Usage across Nodes GB")
         plt.savefig('../../output/node-mem-usage.png')
+        saveCSV(node_cpu_trend_df,"node-mem-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting memory usage across Nodes: ",e) 
@@ -161,6 +164,7 @@ def kubeAPIMemUsage(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         kubeapi_cpu_trend_df.plot(title="Kube API Server Memory usage GB")
         plt.savefig('../../output/kubeapi-mem-usage.png')
+        saveCSV(kubeapi_cpu_trend_df,"kubeapi-mem-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting memory for Kube API Server: ",e)    
@@ -195,6 +199,7 @@ def ACMMemUsage(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         acm_cpu_trend_df.plot(title="ACM Memory usage GB")
         plt.savefig('../../output/acm-mem-usage.png')
+        saveCSV(acm_cpu_trend_df,"acm-mem-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting Memory for ACM: ",e)  
@@ -229,6 +234,7 @@ def ACMDetailMemUsage(pc,startTime, endTime, step):
         acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='namespace',values='value')
         acm_detail_cpu_trend_df.plot(title="ACM Detailed Memory usage GB")
         plt.savefig('../../output/acm-detail-mem-usage.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-detail-mem-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting memory details for ACM: ",e)    

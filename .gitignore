@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
 output/*.png
+output/*.csv
+output/*.txt
 .DS_Store
 

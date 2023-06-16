@@ -58,6 +58,7 @@ def clusterCPUCoreUsed(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         node_cpu_trend_df.plot(title="Cluster CPU Core usage")
         plt.savefig('../../output/cluster-cpu-core-usage.png')
+        saveCSV(node_cpu_trend_df,"cluster-cpu-core-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu core for cluster: ",e)
@@ -92,6 +93,7 @@ def clusterCPUPctUsed(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         node_cpu_trend_df.plot(title="Cluster CPU Pct usage")
         plt.savefig('../../output/cluster-cpu-pct-usage.png')
+        saveCSV(node_cpu_trend_df,"cluster-cpu-pct-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu pct for cluster: ",e) 
@@ -127,6 +129,7 @@ def clusterCPUUsage(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         node_cpu_trend_df.plot(title="Cluster CPU usage")
         plt.savefig('../../output/cluster-cpu-usage.png')
+        saveCSV(node_cpu_trend_df,"cluster-cpu-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu for cluster: ",e)
@@ -161,6 +164,7 @@ def nodeCPUUsage(pc,startTime, endTime, step):
         node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         node_cpu_trend_df.plot(title="CPU Usage across Nodes")
         plt.savefig('../../output/node-cpu-usage.png')
+        saveCSV(node_cpu_trend_df,"node-cpu-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu usage across Nodes: ",e)
@@ -195,6 +199,7 @@ def kubeAPICPUUsage(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         kubeapi_cpu_trend_df.plot(title="Kube API Server CPU usage")
         plt.savefig('../../output/kubeapi-cpu-usage.png')
+        saveCSV(kubeapi_cpu_trend_df,"kubeapi-cpu-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu for Kube API Server: ",e) 
@@ -229,6 +234,7 @@ def ACMCPUUsage(pc,startTime, endTime, step):
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
         acm_cpu_trend_df.plot(title="ACM CPU usage")
         plt.savefig('../../output/acm-cpu-usage.png')
+        saveCSV(acm_cpu_trend_df,"acm-cpu-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu for ACM: ",e)  
@@ -263,6 +269,7 @@ def ACMDetailCPUUsage(pc,startTime, endTime, step):
         acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='namespace',values='value')
         acm_detail_cpu_trend_df.plot(title="ACM Detailed CPU usage")
         plt.savefig('../../output/acm-detail-cpu-usage.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-detail-cpu-usage")
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu details for ACM: ",e)

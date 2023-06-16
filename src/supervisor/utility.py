@@ -44,4 +44,10 @@ def helperTime():
     start_time=(datetime.datetime.now() - datetime.timedelta(minutes=2880))
     end_time=datetime.datetime.now()
     step='1m'
-    return start_time, end_time,step    
+    return start_time, end_time,step  
+
+def saveCSV(df, filename, merge = False):
+    try:
+        df.to_csv('../../output/'+filename+'.csv', index = True, header=True)
+    except Exception as e:
+        print("Failure in saving to CSV: ",e)
