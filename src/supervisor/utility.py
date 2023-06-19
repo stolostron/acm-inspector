@@ -84,11 +84,11 @@ def saveMasterDF():
     try:
         masterDF.to_csv('../../output/master.csv', index = True, header=True)  
         print("MasterDF saved..")
-        masterDF.plot(y=["ManagedClusterCount", "ClusterCPUCoreUsage","ClusterCPUPctUsage","ClusterCPUUsage","KubeAPICPUCoreUsage","ACMCPUCoreUsage"],
+        masterDF.plot(y=["ManagedClusterCount", "ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage"],
                       title="Combined Master CPU chart", kind="line", figsize=(30, 15))
         #masterDF.plot(title="Combined Master CPU chart", kind="line", figsize=(30, 15))
         plt.savefig('../../output/master-cpu.png')
-        masterDF.plot(y=["ManagedClusterCount", "ClusterMemUsageGB","ClusterMemUsagePct","KubeAPIMemUsageGB","ACMMemUsageGB"],
+        masterDF.plot(y=["ManagedClusterCount", "ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB"],
                       title="Combined Master Memory chart", kind="line", figsize=(30, 15))
         plt.savefig('../../output/master-memory.png')
         masterDF.plot(y=["ManagedClusterCount", "etcdDBLeaderElection","etcdDBSizeUsedMB","etcdDBSizeMB"],
