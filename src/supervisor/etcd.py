@@ -55,9 +55,9 @@ def etcdDBSize(pc,startTime, endTime, step):
         etcd_data_trend_df["value"]=etcd_data_trend_df["value"].astype(float)
         etcd_data_trend_df.index= pandas.to_datetime(etcd_data_trend_df.index, unit="s")
         etcd_data_trend_df =  etcd_data_trend_df.pivot( columns='instance',values='value')
-        etcd_data_trend_df.plot(title="Etcd DB size in MB")
-        plt.savefig('../../output/etcd-size.png')
-        saveCSV(etcd_data_trend_df,'etcd-size')
+        etcd_data_trend_df.plot(title="Etcd DB size Details in MB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/etcd-size-detail.png')
+        saveCSV(etcd_data_trend_df,'etcd-size-detail')
 
         """ 
         ax=df.plot(title="Node (Worker) CPU Utilisation Percent Rate")
@@ -66,6 +66,22 @@ def etcdDBSize(pc,startTime, endTime, step):
         #plt.show()
         #print(df.head(5))
         """
+        # calculating the sum of all the etcd db size - w/o instance details
+        etcd_data_sum_trend = pc.custom_query_range(
+        query='sum(etcd_mvcc_db_total_size_in_bytes{job="etcd"})/(1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        etcd_data_sum_trend_df = MetricRangeDataFrame(etcd_data_sum_trend)
+        etcd_data_sum_trend_df["value"]=etcd_data_sum_trend_df["value"].astype(float)
+        etcd_data_sum_trend_df.index= pandas.to_datetime(etcd_data_sum_trend_df.index, unit="s")
+        etcd_data_sum_trend_df.rename(columns={"value": "etcdDBSizeMB"}, inplace = True)
+        #etcd_data_sum_trend_df =  etcd_data_sum_trend_df.pivot( columns='instance',values='value')
+        etcd_data_sum_trend_df.plot(title="Etcd DB size in MB",figsize=(30, 15))
+        plt.savefig('../../output/etcd-size.png')
+        saveCSV(etcd_data_sum_trend_df,'etcd-size',True)    
     except Exception as e:
         print(Fore.RED+"Error in getting etcd db size in MB: ",e)    
         print(Style.RESET_ALL)
@@ -97,9 +113,26 @@ def etcdDBSizeInUse(pc,startTime, endTime, step):
         etcd_data_trend_df["value"]=etcd_data_trend_df["value"].astype(float)
         etcd_data_trend_df.index= pandas.to_datetime(etcd_data_trend_df.index, unit="s")
         etcd_data_trend_df =  etcd_data_trend_df.pivot( columns='instance',values='value')
-        etcd_data_trend_df.plot(title="Etcd space consumed in MB")
+        etcd_data_trend_df.plot(title="Etcd space consumed Details in MB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/etcd-space-consumed-detail.png')
+        saveCSV(etcd_data_trend_df,'etcd-space-consumed-detail')
+
+        # calculating the sum of all the etcd db size - w/o instance details
+        etcd_data_sum_trend = pc.custom_query_range(
+        query='sum(etcd_mvcc_db_total_size_in_use_in_bytes{job="etcd"})/(1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        etcd_data_sum_trend_df = MetricRangeDataFrame(etcd_data_sum_trend)
+        etcd_data_sum_trend_df["value"]=etcd_data_sum_trend_df["value"].astype(float)
+        etcd_data_sum_trend_df.index= pandas.to_datetime(etcd_data_sum_trend_df.index, unit="s")
+        etcd_data_sum_trend_df.rename(columns={"value": "etcdDBSizeUsedMB"}, inplace = True)
+        etcd_data_sum_trend_df.plot(title="Etcd space consumed in MB",figsize=(30, 15))
         plt.savefig('../../output/etcd-space-consumed.png')
-        saveCSV(etcd_data_trend_df,'etcd-space-consumed')
+        saveCSV(etcd_data_sum_trend_df,'etcd-space-consumed',True)
+
     except Exception as e:
         print(Fore.RED+"Error in getting etcd space in use in MB: ",e)
         print(Style.RESET_ALL)
@@ -132,9 +165,25 @@ def etcdLeaderChanges(pc,startTime, endTime, step):
         etcd_data_trend_df["value"]=etcd_data_trend_df["value"].astype(float)
         etcd_data_trend_df.index= pandas.to_datetime(etcd_data_trend_df.index, unit="s")
         etcd_data_trend_df =  etcd_data_trend_df.pivot( columns='instance',values='value')
-        etcd_data_trend_df.plot(title="Etcd leader election counts")
+        etcd_data_trend_df.plot(title="Etcd leader election counts Details",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/etcd-leader-election-count-detal.png')
+        saveCSV(etcd_data_trend_df,'etcd-leader-election-count-detail')
+
+        # calculating the sum of all the leader changes - w/o instance details
+        etcd_data_sum_trend = pc.custom_query_range(
+        query='sum(changes(etcd_server_leader_changes_seen_total{job="etcd"}[1d]))',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        etcd_data_sum_trend_df = MetricRangeDataFrame(etcd_data_sum_trend)
+        etcd_data_sum_trend_df["value"]=etcd_data_sum_trend_df["value"].astype(float)
+        etcd_data_sum_trend_df.index= pandas.to_datetime(etcd_data_sum_trend_df.index, unit="s")
+        etcd_data_sum_trend_df.rename(columns={"value": "etcdDBLeaderElection"}, inplace = True)
+        etcd_data_sum_trend_df.plot(title="Etcd leader election counts",figsize=(30, 15))
         plt.savefig('../../output/etcd-leader-election-count.png')
-        saveCSV(etcd_data_trend_df,'etcd-leader-election-count')
+        saveCSV(etcd_data_sum_trend_df,'etcd-leader-election-count',True)     
     except Exception as e:
         print(Fore.RED+"Error in getting leader election counts in etcd: ",e)
         print(Style.RESET_ALL)

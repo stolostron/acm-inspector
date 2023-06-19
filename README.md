@@ -30,13 +30,17 @@ Connection to in-cluster Prometheus works from OCP 4.10 upwards. That is because
 - connect to your OpenShift cluster that runs RHACM by `oc login`. You will need a kubeadmin access.
 - install dependencies `pip install -r requirements.txt`
 - run `python entry.py prom`
+- `if you` run `python entry.py prom 2>&1 | tee ../../output/report.txt` then all the output on the screen will also be redirected to `output/report.txt` file.
 
 ### Result
 
-1. `Historical` metric results are created as png files under `output` directory
+1. `Historical` metric results are created as png & csv files under `output` directory
+      - There is `output/breakdown` directory which contains detailed png & csv files containing breakdown metrics for example by namespace or resource etc
+      - Under the `output` directory all png & csv files contain metrics are grouped by time `only`
+      - This allows us to merge all metrics under a csv called `master.csv` and to create a set of graphs (png) that start with the name `master-*.png`. These visually correlate how the system is performing with time as the number of managed clusters gets added. 
 2. `Current` data is printed out in the screen as below:
 
-Note: `True` in the ouput means good status.
+Note: `True` in the ouput means good status (*though this is not fully working yet*).
 ```
 Starting to Run ACM Health Check -  2022-05-29 09:10:17.130964
 

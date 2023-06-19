@@ -36,26 +36,32 @@ def apiServerLatency(pc,startTime, endTime, step):
     print("99th Percentile Latency of API calls to resources - Top 10")
 
     try:
-        apiserver_latency_data = pc.custom_query('topk(10,histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le,resource)))')
+        apiserver_latency_data = pc.custom_query('topk(10,histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le,verb)))')
         apiserver_latency_data_df = MetricSnapshotDataFrame(apiserver_latency_data)
         apiserver_latency_data_df["value"]=apiserver_latency_data_df["value"].astype(float)
         apiserver_latency_data_df.rename(columns={"value": "APIServer99PctLatency"}, inplace = True)
-        print(apiserver_latency_data_df[['resource','APIServer99PctLatency']].to_markdown())
+        print(apiserver_latency_data_df[['verb','APIServer99PctLatency']].to_markdown())
  
         # not working - need to check
-        # apiserver_data_trend = pc.custom_query_range(
-        # query='topk(10,histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le,resource)))',
-        #     start_time=startTime,
-        #     end_time=endTime,
-        #     step=step,
-        # )
+        #query='topk(10,histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le,verb)))',
+        #query='topk(10,histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le,resource)))',
+        #query='histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le))',
+         
+        """     
+        apiserver_data_trend = pc.custom_query_range(
+         query='histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{apiserver="kube-apiserver",subresource!="log",verb!~"WATCH|WATCHLIST|PROXY"}[5m])) by(le))',
+             start_time=startTime,
+             end_time=endTime,
+             step=step,
+         )
 
-        #apiserver_data_trend_df = MetricRangeDataFrame(apiserver_data_trend)
-        #apiserver_data_trend_df["value"]= apiserver_data_trend_df["value"].astype(float)
-        #apiserver_data_trend_df.index= pandas.to_datetime(apiserver_data_trend_df.index, unit="s")
-        #apiserver_data_trend_df = apiserver_data_trend_df.pivot( columns='resource',values='value')
-        #apiserver_data_trend_df.plot(title="API Server Latency")
-        #plt.savefig('../../output/api-server-latency.png')        
+        apiserver_data_trend_df = MetricRangeDataFrame(apiserver_data_trend)
+        apiserver_data_trend_df["value"]= apiserver_data_trend_df["value"].astype(float)
+        apiserver_data_trend_df.index= pandas.to_datetime(apiserver_data_trend_df.index, unit="s")
+        #apiserver_data_trend_df = apiserver_data_trend_df.pivot( columns='verb',values='value')
+        apiserver_data_trend_df.plot(title="API Server Latency",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/api-server-latency.png')  
+        """       
     except Exception as e:
         print(Fore.RED+"Error in getting 99th Percentile Latency of API calls to resources - Top 10",e)
         print(Style.RESET_ALL)
@@ -87,8 +93,8 @@ def apiServerObjectCount(pc,startTime, endTime, step) :
         apiserver_data_trend_df["value"]=apiserver_data_trend_df["value"].astype(float)
         apiserver_data_trend_df.index= pandas.to_datetime(apiserver_data_trend_df.index, unit="s")
         apiserver_data_trend_df =  apiserver_data_trend_df.pivot( columns='resource',values='value')
-        apiserver_data_trend_df.plot(title="Trend of API Server Object Count")
-        plt.savefig('../../output/apiserver-resource-count.png')
+        apiserver_data_trend_df.plot(title="Trend of API Server Object Count",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/apiserver-resource-count.png')
         saveCSV(apiserver_data_trend_df, "apiserver-resource-count")
     except Exception as e:
         print(Fore.RED+"Error in getting API Server Object Count: ",e)
@@ -118,8 +124,8 @@ def apiServerObjectCreationCount(pc,startTime, endTime, step) :
         apiserver_data_trend_df["value"]=apiserver_data_trend_df["value"].astype(float)
         apiserver_data_trend_df.index= pandas.to_datetime(apiserver_data_trend_df.index, unit="s")
         apiserver_data_trend_df =  apiserver_data_trend_df.pivot( columns='resource',values='value')
-        apiserver_data_trend_df.plot(title="Trend of API Server Object Creation Count")
-        plt.savefig('../../output/apiserver-resource-creation-count.png')
+        apiserver_data_trend_df.plot(title="Trend of API Server Object Creation Count",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/apiserver-resource-creation-count.png')
         saveCSV(apiserver_data_trend_df, "apiserver-resource-creation-count")
     except Exception as e:
         print(Fore.RED+"Error in getting API Server Object Creation Count or No new objects created ...",e)
@@ -149,8 +155,8 @@ def apiServerRequestByObject(pc,startTime, endTime, step) :
         apiserver_data_trend_df["value"]=apiserver_data_trend_df["value"].astype(float)
         apiserver_data_trend_df.index= pandas.to_datetime(apiserver_data_trend_df.index, unit="s")
         apiserver_data_trend_df =  apiserver_data_trend_df.pivot( columns='resource',values='value')
-        apiserver_data_trend_df.plot(title="Trend of API Server Request Count by Object")
-        plt.savefig('../../output/apiserver-request-count-by-object.png')
+        apiserver_data_trend_df.plot(title="Trend of API Server Request Count by Object",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/apiserver-request-count-by-object.png')
         saveCSV(apiserver_data_trend_df, "apiserver-request-count-by-object")
     except Exception as e:
         print(Fore.RED+"Error in getting API Server Request Count by Object: ",e)
@@ -181,8 +187,8 @@ def apiServerLatencyByObject(pc,startTime, endTime, step) :
         # apiserver_data_trend_df["value"]=apiserver_data_trend_df["value"].astype(float)
         # apiserver_data_trend_df.index= pandas.to_datetime(apiserver_data_trend_df.index, unit="s")
         # apiserver_data_trend_df =  apiserver_data_trend_df.pivot( columns='resource',values='value')
-        # apiserver_data_trend_df.plot(title="Trend of API Server Latency by Object")
-        # plt.savefig('../../output/apiserver-latency-by-object.png')
+        # apiserver_data_trend_df.plot(title="Trend of API Server Latency by Object",figsize=(30, 15))
+        # plt.savefig('../../output/breakdown/apiserver-latency-by-object.png')
     except Exception as e:
         print(Fore.RED+"Error in getting API Server Latency by Object: ",e)
         print(Style.RESET_ALL)
