@@ -54,9 +54,11 @@ def managedClusterCount(pc,startTime, endTime, step):
         managed_cluster_add_df = MetricRangeDataFrame(managed_cluster_add)
         managed_cluster_add_df["value"]=managed_cluster_add_df["value"].astype(float)
         managed_cluster_add_df.index= pandas.to_datetime(managed_cluster_add_df.index, unit="s")
-        managed_cluster_add_df.plot(title="Number of Managed clusters connected to Hub")
+        managed_cluster_add_df.rename(columns = {'value':'ManagedClusterCount'}, inplace = True)
+        managed_cluster_add_df.plot(title="Number of Managed clusters connected to Hub",figsize=(30, 15))
         plt.savefig('../../output/managed-cluster-count.png')
-        saveCSV( managed_cluster_add_df, "managed-cluster-count")
+        saveCSV( managed_cluster_add_df, "managed-cluster-count",True)
+        setInitialDF(managed_cluster_add_df)
     except Exception as e:
         print(Fore.RED+"Error in getting the number of managed clusters: ", e)
         print(Style.RESET_ALL)
@@ -86,9 +88,10 @@ def acmObsTimeSeriesCount(pc,startTime, endTime, step):
         managed_cluster_add_df = MetricRangeDataFrame(managed_cluster_add)
         managed_cluster_add_df["value"]=managed_cluster_add_df["value"].astype(float)
         managed_cluster_add_df.index= pandas.to_datetime(managed_cluster_add_df.index, unit="s")
-        managed_cluster_add_df.plot(title="Number of TimeSeries being sent to ACM Observability")
+        managed_cluster_add_df.rename(columns={"value": "TimeSeriesCount"}, inplace = True)
+        managed_cluster_add_df.plot(title="Number of TimeSeries being sent to ACM Observability",figsize=(30, 15))
         plt.savefig('../../output/obs-timeseries-count.png')
-        saveCSV( managed_cluster_add_df, "obs-timeseries-count")
+        saveCSV( managed_cluster_add_df, "obs-timeseries-count",True)
     except Exception as e:
         print(Fore.RED+"Error in getting the number of timeseries send to ACM Obs - ACM Obs may not be configured: ", e)
         print(Style.RESET_ALL)
@@ -119,8 +122,9 @@ def restartCount(pc,startTime, endTime, step):
         restart_data_trend_df["value"]=restart_data_trend_df["value"].astype(float)
         restart_data_trend_df.index= pandas.to_datetime(restart_data_trend_df.index, unit="s")
         restart_data_trend_df =  restart_data_trend_df.pivot( columns='namespace',values='value')
-        restart_data_trend_df.plot(title="Number of container restarts in ACM pods")
-        plt.savefig('../../output/container-restart-count.png')    
+        restart_data_trend_df.rename(columns={"value": "TimeSeriesCount"}, inplace = True)
+        restart_data_trend_df.plot(title="Number of container restarts in ACM pods",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/container-restart-count.png')    
         saveCSV( restart_data_trend_df, "container-restart-count")
 
     except Exception as e:
@@ -152,8 +156,9 @@ def checkPV(pc,startTime, endTime, step):
         pv_data_trend_df["value"]=pv_data_trend_df["value"].astype(float)
         pv_data_trend_df.index= pandas.to_datetime(pv_data_trend_df.index, unit="s")
         pv_data_trend_df =  pv_data_trend_df.pivot( columns='persistentvolumeclaim',values='value')
-        pv_data_trend_df.plot(title="Amount of percent free space left in PVs needed by ACM")
-        plt.savefig('../../output/acm-pv-free-space.png')
+        pv_data_trend_df.rename(columns={"value": "TimeSeriesCount"}, inplace = True)
+        pv_data_trend_df.plot(title="Amount of percent free space left in PVs needed by ACM",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-pv-free-space.png')
         saveCSV( pv_data_trend_df, "acm-pv-free-space")
 
     except Exception as e:
@@ -189,8 +194,9 @@ def checkContainerCount(pc,startTime, endTime, step):
         container_data_trend_df["value"]=container_data_trend_df["value"].astype(float)
         container_data_trend_df.index= pandas.to_datetime(container_data_trend_df.index, unit="s")
         container_data_trend_df =  container_data_trend_df.pivot( columns='namespace',values='value')
-        container_data_trend_df.plot(title="Number of Pods running in the ACM namespaces")
-        plt.savefig('../../output/running-pod-count-acm.png')
+        container_data_trend_df.rename(columns={"value": "PodCount"}, inplace = True)
+        container_data_trend_df.plot(title="Number of Pods running in the ACM namespaces",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/running-pod-count-acm.png')
         saveCSV( container_data_trend_df, "running-pod-count-acm")
 
     except Exception as e:
@@ -222,8 +228,9 @@ def majorAlertCount(pc,startTime, endTime, step):
         alert_data_trend_df["value"]=alert_data_trend_df["value"].astype(float)
         alert_data_trend_df.index= pandas.to_datetime(alert_data_trend_df.index, unit="s")
         alert_data_trend_df =  alert_data_trend_df.pivot( columns='alertname',values='value')
-        alert_data_trend_df.plot(title="Alerts currently firing under Hub Cluster")
-        plt.savefig('../../output/firing-alert-count.png')
+        alert_data_trend_df.rename(columns={"value": "AlertCount"}, inplace = True)
+        alert_data_trend_df.plot(title="Alerts currently firing under Hub Cluster",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/firing-alert-count.png')
         saveCSV( alert_data_trend_df, "firing-alert-count")
     except Exception as e:
         print(Fore.RED+"Error in getting all alerts currently firing under Hub Cluster that have triggered more than once: ",e)

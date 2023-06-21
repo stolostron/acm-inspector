@@ -53,6 +53,7 @@ def main():
     
     mc = checkManagedClusterStatus()
     node = checkNodeStatus()
+    saveMasterDF()
     print(Back.LIGHTYELLOW_EX+"")
     print("************************************************************************************************")
     print("End ACM Health Check")

@@ -3,5 +3,7 @@ __pycache__/
 output/*.png
 output/*.csv
 output/*.txt
+output/breakdown/*.png
+output/breakdown/*.csv
 .DS_Store
 

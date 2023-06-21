@@ -16,6 +16,7 @@ def checkCPUUsage(startTime, endTime, step):
     print(Style.RESET_ALL)
     status = True
 
+    status=clusterCPUCoreCapacity(pc,startTime, endTime, step)
     status=clusterCPUCoreUsed(pc,startTime, endTime, step)
     status=clusterCPUPctUsed(pc,startTime, endTime, step)
     status=clusterCPUUsage(pc,startTime, endTime, step)
@@ -33,6 +34,42 @@ def checkCPUUsage(startTime, endTime, step):
     print(Style.RESET_ALL)
     return status
      
+def clusterCPUCoreCapacity(pc,startTime, endTime, step):
+
+    print("Total Cluster CPU Core Capacity")
+
+    try:
+        node_cpu = pc.custom_query('sum(instance:node_num_cpu:sum{job="node-exporter", cluster=""})')
+
+        node_cpu_df = MetricSnapshotDataFrame(node_cpu)
+        node_cpu_df["value"]=node_cpu_df["value"].astype(float)
+        node_cpu_df.rename(columns={"value": "ClusterCPUCoreCap"}, inplace = True)
+        print(node_cpu_df[['ClusterCPUCoreCap']].to_markdown())
+
+        node_cpu_trend = pc.custom_query_range(
+        query='sum(instance:node_num_cpu:sum{job="node-exporter", cluster=""})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        node_cpu_trend_df = MetricRangeDataFrame(node_cpu_trend)
+        node_cpu_trend_df["value"]=node_cpu_trend_df["value"].astype(float)
+        node_cpu_trend_df.index= pandas.to_datetime(node_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        node_cpu_trend_df.rename(columns={"value": "ClusterCPUCoreCap"}, inplace = True)
+        node_cpu_trend_df.plot(title="Cluster CPU Core Capacity",figsize=(30, 15))
+        plt.savefig('../../output/cluster-cpu-core-cap.png')
+        saveCSV(node_cpu_trend_df,"cluster-cpu-core-cap",True)
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu core Capacity for cluster: ",e)
+        print(Style.RESET_ALL)    
+    print("=============================================")
+   
+    status=True
+    return status
+
 def clusterCPUCoreUsed(pc,startTime, endTime, step):
 
     print("Total Cluster CPU Core usage")
@@ -42,8 +79,8 @@ def clusterCPUCoreUsed(pc,startTime, endTime, step):
 
         node_cpu_df = MetricSnapshotDataFrame(node_cpu)
         node_cpu_df["value"]=node_cpu_df["value"].astype(float)
-        node_cpu_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
-        print(node_cpu_df[['CPUCoreUsage']].to_markdown())
+        node_cpu_df.rename(columns={"value": "ClusterCPUCoreUsage"}, inplace = True)
+        print(node_cpu_df[['ClusterCPUCoreUsage']].to_markdown())
 
         node_cpu_trend = pc.custom_query_range(
         query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=""})',
@@ -56,9 +93,10 @@ def clusterCPUCoreUsed(pc,startTime, endTime, step):
         node_cpu_trend_df["value"]=node_cpu_trend_df["value"].astype(float)
         node_cpu_trend_df.index= pandas.to_datetime(node_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        node_cpu_trend_df.plot(title="Cluster CPU Core usage")
+        node_cpu_trend_df.rename(columns={"value": "ClusterCPUCoreUsage"}, inplace = True)
+        node_cpu_trend_df.plot(title="Cluster CPU Core usage",figsize=(30, 15))
         plt.savefig('../../output/cluster-cpu-core-usage.png')
-        saveCSV(node_cpu_trend_df,"cluster-cpu-core-usage")
+        saveCSV(node_cpu_trend_df,"cluster-cpu-core-usage",True)
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu core for cluster: ",e)
@@ -77,8 +115,8 @@ def clusterCPUPctUsed(pc,startTime, endTime, step):
 
         node_cpu_df = MetricSnapshotDataFrame(node_cpu)
         node_cpu_df["value"]=node_cpu_df["value"].astype(float)
-        node_cpu_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
-        print(node_cpu_df[['CPUCoreUsage']].to_markdown())
+        node_cpu_df.rename(columns={"value": "ClusterCPUPctUsage"}, inplace = True)
+        print(node_cpu_df[['ClusterCPUPctUsage']].to_markdown())
 
         node_cpu_trend = pc.custom_query_range(
         query='(1 - sum(avg by (mode) (rate(node_cpu_seconds_total{job="node-exporter", mode=~"idle|iowait|steal", cluster=""}[5m]))))*100',
@@ -91,9 +129,10 @@ def clusterCPUPctUsed(pc,startTime, endTime, step):
         node_cpu_trend_df["value"]=node_cpu_trend_df["value"].astype(float)
         node_cpu_trend_df.index= pandas.to_datetime(node_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        node_cpu_trend_df.plot(title="Cluster CPU Pct usage")
+        node_cpu_trend_df.rename(columns={"value": "ClusterCPUPctUsage"}, inplace = True)
+        node_cpu_trend_df.plot(title="Cluster CPU Pct usage",figsize=(30, 15))
         plt.savefig('../../output/cluster-cpu-pct-usage.png')
-        saveCSV(node_cpu_trend_df,"cluster-cpu-pct-usage")
+        saveCSV(node_cpu_trend_df,"cluster-cpu-pct-usage",True)
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu pct for cluster: ",e) 
@@ -113,8 +152,8 @@ def clusterCPUUsage(pc,startTime, endTime, step):
 
         node_cpu_df = MetricSnapshotDataFrame(node_cpu)
         node_cpu_df["value"]=node_cpu_df["value"].astype(float)
-        node_cpu_df.rename(columns={"value": "CPUUsage"}, inplace = True)
-        print(node_cpu_df[['CPUUsage']].to_markdown())
+        node_cpu_df.rename(columns={"value": "ClusterCPUUsage"}, inplace = True)
+        print(node_cpu_df[['ClusterCPUUsage']].to_markdown())
 
         node_cpu_trend = pc.custom_query_range(
         query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate)',
@@ -127,9 +166,10 @@ def clusterCPUUsage(pc,startTime, endTime, step):
         node_cpu_trend_df["value"]=node_cpu_trend_df["value"].astype(float)
         node_cpu_trend_df.index= pandas.to_datetime(node_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        node_cpu_trend_df.plot(title="Cluster CPU usage")
+        node_cpu_trend_df.rename(columns={"value": "ClusterCPUUsage"}, inplace = True)
+        node_cpu_trend_df.plot(title="Cluster CPU usage",figsize=(30, 15))
         plt.savefig('../../output/cluster-cpu-usage.png')
-        saveCSV(node_cpu_trend_df,"cluster-cpu-usage")
+        saveCSV(node_cpu_trend_df,"cluster-cpu-usage",True)
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu for cluster: ",e)
@@ -148,8 +188,8 @@ def nodeCPUUsage(pc,startTime, endTime, step):
 
         node_cpu_df = MetricSnapshotDataFrame(node_cpu)
         node_cpu_df["value"]=node_cpu_df["value"].astype(float)
-        node_cpu_df.rename(columns={"value": "CPUUsage"}, inplace = True)
-        print(node_cpu_df[['node','CPUUsage']].to_markdown())
+        node_cpu_df.rename(columns={"value": "NodeCPUCoreUsage"}, inplace = True)
+        print(node_cpu_df[['node','NodeCPUCoreUsage']].to_markdown())
 
         node_cpu_trend = pc.custom_query_range(
         query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate) by (node)',
@@ -162,8 +202,9 @@ def nodeCPUUsage(pc,startTime, endTime, step):
         node_cpu_trend_df["value"]=node_cpu_trend_df["value"].astype(float)
         node_cpu_trend_df.index= pandas.to_datetime(node_cpu_trend_df.index, unit="s")
         node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        node_cpu_trend_df.plot(title="CPU Usage across Nodes")
-        plt.savefig('../../output/node-cpu-usage.png')
+        node_cpu_trend_df.rename(columns={"value": "NodeCPUCoreUsage"}, inplace = True)
+        node_cpu_trend_df.plot(title="CPU Core Usage across Nodes",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/node-cpu-usage.png')
         saveCSV(node_cpu_trend_df,"node-cpu-usage")
 
     except Exception as e:
@@ -176,18 +217,18 @@ def nodeCPUUsage(pc,startTime, endTime, step):
 
 def kubeAPICPUUsage(pc,startTime, endTime, step):
 
-    print("Total Kube API Server CPU usage")
+    print("Total Kube API Server CPU Core usage")
 
     try:
         kubeapi_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="openshift-kube-apiserver"})')
 
         kubeapi_cpu_df = MetricSnapshotDataFrame(kubeapi_cpu)
         kubeapi_cpu_df["value"]=kubeapi_cpu_df["value"].astype(float)
-        kubeapi_cpu_df.rename(columns={"value": "CPUUsage"}, inplace = True)
-        print(kubeapi_cpu_df[['CPUUsage']].to_markdown())
+        kubeapi_cpu_df.rename(columns={"value": "KubeAPICPUCoreUsage"}, inplace = True)
+        print(kubeapi_cpu_df[['KubeAPICPUCoreUsage']].to_markdown())
 
         kubeapi_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate) by (node)',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="openshift-kube-apiserver"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -197,9 +238,10 @@ def kubeAPICPUUsage(pc,startTime, endTime, step):
         kubeapi_cpu_trend_df["value"]=kubeapi_cpu_trend_df["value"].astype(float)
         kubeapi_cpu_trend_df.index= pandas.to_datetime(kubeapi_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        kubeapi_cpu_trend_df.plot(title="Kube API Server CPU usage")
+        kubeapi_cpu_trend_df.rename(columns={"value": "KubeAPICPUCoreUsage"}, inplace = True)
+        kubeapi_cpu_trend_df.plot(title="Kube API Server CPU Core usage",figsize=(30, 15))
         plt.savefig('../../output/kubeapi-cpu-usage.png')
-        saveCSV(kubeapi_cpu_trend_df,"kubeapi-cpu-usage")
+        saveCSV(kubeapi_cpu_trend_df,"kubeapi-cpu-usage",True)
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu for Kube API Server: ",e) 
@@ -211,15 +253,15 @@ def kubeAPICPUUsage(pc,startTime, endTime, step):
 
 def ACMCPUUsage(pc,startTime, endTime, step):
 
-    print("Total ACM CPU usage")
+    print("Total ACM CPU Core usage")
 
     try:
         acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"})')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
-        acm_cpu_df.rename(columns={"value": "CPUUsage"}, inplace = True)
-        print(acm_cpu_df[['CPUUsage']].to_markdown())
+        acm_cpu_df.rename(columns={"value": "ACMCPUCoreUsage"}, inplace = True)
+        print(acm_cpu_df[['ACMCPUCoreUsage']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
         query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"})',
@@ -232,9 +274,10 @@ def ACMCPUUsage(pc,startTime, endTime, step):
         acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
         acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        acm_cpu_trend_df.plot(title="ACM CPU usage")
+        acm_cpu_trend_df.rename(columns={"value": "ACMCPUCoreUsage"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM CPU Core usage",figsize=(30, 15))
         plt.savefig('../../output/acm-cpu-usage.png')
-        saveCSV(acm_cpu_trend_df,"acm-cpu-usage")
+        saveCSV(acm_cpu_trend_df,"acm-cpu-usage",True)
 
     except Exception as e:
         print(Fore.RED+"Error in getting cpu for ACM: ",e)  
@@ -246,15 +289,15 @@ def ACMCPUUsage(pc,startTime, endTime, step):
 
 def ACMDetailCPUUsage(pc,startTime, endTime, step):
 
-    print("Detailed ACM CPU usage")
+    print("Detailed ACM CPU Core usage")
 
     try:
         acm_detail_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
-        acm_detail_cpu_df.rename(columns={"value": "CPUUsage"}, inplace = True)
-        print(acm_detail_cpu_df[['namespace','CPUUsage']].to_markdown())
+        acm_detail_cpu_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
+        print(acm_detail_cpu_df[['namespace','CPUCoreUsage']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
         query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace)',
@@ -267,8 +310,9 @@ def ACMDetailCPUUsage(pc,startTime, endTime, step):
         acm_detail_cpu_trend_df["value"]=acm_detail_cpu_trend_df["value"].astype(float)
         acm_detail_cpu_trend_df.index= pandas.to_datetime(acm_detail_cpu_trend_df.index, unit="s")
         acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='namespace',values='value')
-        acm_detail_cpu_trend_df.plot(title="ACM Detailed CPU usage")
-        plt.savefig('../../output/acm-detail-cpu-usage.png')
+        acm_detail_cpu_trend_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
+        acm_detail_cpu_trend_df.plot(title="ACM Detailed CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-detail-cpu-usage.png')
         saveCSV(acm_detail_cpu_trend_df,"acm-detail-cpu-usage")
 
     except Exception as e:

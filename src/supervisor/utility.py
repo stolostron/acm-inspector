@@ -3,6 +3,13 @@ from prometheus_api_client import *
 from kubernetes import client, config
 import sys
 import datetime
+import pandas
+from colorama import Fore, Back, Style
+import matplotlib.pyplot as plt
+
+# To be able to start the dataframe merge, we need this global variable
+initialDF = pandas.DataFrame()
+masterDF = pandas.DataFrame()
 
 def promConnect():
 
@@ -48,6 +55,45 @@ def helperTime():
 
 def saveCSV(df, filename, merge = False):
     try:
-        df.to_csv('../../output/'+filename+'.csv', index = True, header=True)
+        if merge == True:
+            global masterDF
+            df.to_csv('../../output/'+filename+'.csv', index = True, header=True)
+
+            if masterDF.empty:
+                masterDF = pandas.merge(initialDF, df, how ='inner', on ='timestamp')
+            else:
+                masterDF=pandas.merge(masterDF, df, how ='inner', on ='timestamp')
+            #print(masterDF)
+        else:
+            df.to_csv('../../output/breakdown/'+filename+'.csv', index = True, header=True)
     except Exception as e:
-        print("Failure in saving to CSV: ",e)
+        print(Fore.RED+"Failure in saving to CSV: ",e) 
+        print(Style.RESET_ALL)    
+
+def setInitialDF(df): 
+    global initialDF
+    try:
+        initialDF = df
+    except Exception as e:
+        print("Failure in setting masterDF: ",e)
+
+    print("MasterDF set..")
+    print(initialDF)
+
+def saveMasterDF(): 
+    try:
+        masterDF.to_csv('../../output/master.csv', index = True, header=True)  
+        print("MasterDF saved..")
+        masterDF.plot(y=["ManagedClusterCount", "ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage"],
+                      title="Combined Master CPU chart", kind="line", figsize=(30, 15))
+        #masterDF.plot(title="Combined Master CPU chart", kind="line", figsize=(30, 15))
+        plt.savefig('../../output/master-cpu.png')
+        masterDF.plot(y=["ManagedClusterCount", "ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB"],
+                      title="Combined Master Memory chart", kind="line", figsize=(30, 15))
+        plt.savefig('../../output/master-memory.png')
+        masterDF.plot(y=["ManagedClusterCount", "etcdDBLeaderElection","etcdDBSizeUsedMB","etcdDBSizeMB"],
+                      title="Combined Master API-ETCD chart", kind="line", figsize=(30, 15))
+        plt.savefig('../../output/master-api-etcd.png')
+    except Exception as e:
+        print(Fore.RED+"Failure in saving masterDF: ",e)  
+        print(Style.RESET_ALL)        
