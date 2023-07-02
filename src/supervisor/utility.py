@@ -80,6 +80,7 @@ def setInitialDF(df):
     print("MasterDF set..")
     print(initialDF)
 
+
 def saveMasterDF(): 
     try:
         masterDF.to_csv('../../output/master.csv', index = True, header=True)  
@@ -94,6 +95,17 @@ def saveMasterDF():
         masterDF.plot(y=["ManagedClusterCount", "etcdDBLeaderElection","etcdDBSizeUsedMB","etcdDBSizeMB"],
                       title="Combined Master API-ETCD chart", kind="line", figsize=(30, 15))
         plt.savefig('../../output/master-api-etcd.png')
+        masterDF.plot(y=["ManagedClusterCount", "CompactorHalted","recvsync90","recvsync95","recvsync99"],
+                      title="Combined Master Thanos chart", kind="line", figsize=(30, 15))
+        plt.savefig('../../output/master-thanos.png')
+        # the column names can be derived dynamically from the dataframe or apiServerObjects.py module
+        masterDF.plot(y=["ManagedClusterCount", "APIServersecretsCount","APIServerconfigmapsCount","APIServerserviceaccountsCount",
+                         'APIServerclusterrolebindings.rbac.authorization.k8s.ioCount','APIServerrolebindings.rbac.authorization.k8s.ioCount',
+                         'APIServerclusterroles.rbac.authorization.k8s.ioCount','APIServerroles.rbac.authorization.k8s.ioCount',
+                         'APIServerleases.coordination.k8s.ioCount','APIServerconfigurationpolicies.policy.open-cluster-management.ioCount',
+                         'APIServermanifestworks.work.open-cluster-management.ioCount'],
+                      title="Combined Master Thanos chart", kind="line", figsize=(30, 15))
+        plt.savefig('../../output/master-apiServerObjCount.png')
     except Exception as e:
         print(Fore.RED+"Failure in saving masterDF: ",e)  
         print(Style.RESET_ALL)        
