@@ -57,8 +57,9 @@ def managedClusterCount(pc,startTime, endTime, step):
         managed_cluster_add_df.rename(columns = {'value':'ManagedClusterCount'}, inplace = True)
         managed_cluster_add_df.plot(title="Number of Managed clusters connected to Hub",figsize=(30, 15))
         plt.savefig('../../output/managed-cluster-count.png')
-        saveCSV( managed_cluster_add_df, "managed-cluster-count",True)
         setInitialDF(managed_cluster_add_df)
+        saveCSV( managed_cluster_add_df, "managed-cluster-count",True)
+        #setInitialDF(managed_cluster_add_df)
     except Exception as e:
         print(Fore.RED+"Error in getting the number of managed clusters: ", e)
         print(Style.RESET_ALL)
@@ -76,7 +77,7 @@ def acmObsTimeSeriesCount(pc,startTime, endTime, step):
         mc_count_data_df = MetricSnapshotDataFrame(mc_count_data)
         mc_count_data_df["value"]=mc_count_data_df["value"].astype(int)
         mc_count_data_df.rename(columns={"value": "TimeSeriesCount"}, inplace = True)
-        print(mc_count_data_df[['ManagedClusterCount']].to_markdown())
+        print(mc_count_data_df[['TimeSeriesCount']].to_markdown())
 
         managed_cluster_add = pc.custom_query_range(
         query='sum(acm_prometheus_tsdb_head_series)/3',

@@ -23,6 +23,7 @@ def checkThanosStatus(startTime, endTime, step):
     status=thanosRecvSync90(pc,startTime, endTime, step)
     status=thanosRecvSync95(pc,startTime, endTime, step)
     status=thanosRecvSync99(pc,startTime, endTime, step)
+    status=thanosRecvGrpcError(pc,startTime, endTime, step)
 
 
     print(Back.LIGHTYELLOW_EX+"")
@@ -58,7 +59,7 @@ def thanosCompactHalt(pc,startTime, endTime, step):
         compactor_data_trend_df.rename(columns={"value": "CompactorHalted"}, inplace = True)
         compactor_data_trend_df.plot(title="Thanos Compactor Halted",figsize=(30, 15))
         plt.savefig('../../output/thanos-compact-halted.png')
-        saveCSV(compactor_data_trend_df,'thanos-compact-halted',True)
+        saveCSV(compactor_data_trend_df[['CompactorHalted']],'thanos-compact-halted',True)
   
     except Exception as e:
         print(Fore.RED+"Error in thanos compactor halt data: ",e)    
@@ -179,6 +180,43 @@ def thanosRecvSync99(pc,startTime, endTime, step):
   
     except Exception as e:
         print(Fore.RED+"Error in getting Thanos Reciever Sync 99th percentile: ",e)    
+        print(Style.RESET_ALL)
+    print("=============================================")
+   
+    status=True
+    return status
+
+def thanosRecvGrpcError(pc,startTime, endTime, step):
+
+    print("Thanos receive grpc error")
+    sample='sum by (grpc_code) (rate(acm_grpc_server_handled_total{grpc_code=~"Unknown|ResourceExhausted|Internal|Unavailable|DataLoss",namespace="open-cluster-management-observability", job=~"observability-thanos-receive-default", grpc_type="unary", grpc_method!="RemoteWrite"}[5m])) / ignoring (grpc_code) group_left() sum(rate(acm_grpc_server_handled_total{namespace="open-cluster-management-observability", job=~"observability-thanos-receive-default", grpc_type="unary", grpc_method!="RemoteWrite"}[5m]))'
+
+    try:
+        recvsync90_data = pc.custom_query(
+            query=sample)
+
+        recvsync90_data_df = MetricSnapshotDataFrame(recvsync90_data)
+        recvsync90_data_df["value"]=recvsync90_data_df["value"].astype(float)
+        recvsync90_data_df.rename(columns={"value": "Error"}, inplace = True)
+        print(recvsync90_data_df[['grpc_code','Error']].to_markdown())
+
+        recvsync90_data_trend = pc.custom_query_range(
+        query=sample,
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        recvsync90_data_trend_df = MetricRangeDataFrame(recvsync90_data_trend)
+        recvsync90_data_trend_df["value"]=recvsync90_data_trend_df["value"].astype(float)
+        recvsync90_data_trend_df.index= pandas.to_datetime(recvsync90_data_trend_df.index, unit="s")
+        recvsync90_data_trend_df =  recvsync90_data_trend_df.pivot( columns='grpc_code',values='value')
+        recvsync90_data_trend_df.plot(title="Thanos receiver GRPC Error",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/thanos-recv-grpc-error.png')
+        saveCSV(recvsync90_data_trend_df,'thanos-recv-grpc-error')
+  
+    except Exception as e:
+        print(Fore.RED+"Error in getting Thanos Reciever GRPC Error: ",e)    
         print(Style.RESET_ALL)
     print("=============================================")
    

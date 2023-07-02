@@ -60,7 +60,15 @@ def saveCSV(df, filename, merge = False):
             df.to_csv('../../output/'+filename+'.csv', index = True, header=True)
 
             if masterDF.empty:
-                masterDF = pandas.merge(initialDF, df, how ='inner', on ='timestamp')
+                #masterDF = pandas.merge(initialDF, df, how ='inner', on ='timestamp')
+                masterDF = initialDF
+                # print("-----------------------------------")
+                # print(initialDF)
+                # print("-----------------------------------")
+                # print(df)
+                # print("-----------------------------------")
+                # print(masterDF)
+                # print("-----------------------------------")
             else:
                 masterDF=pandas.merge(masterDF, df, how ='inner', on ='timestamp')
             #print(masterDF)
