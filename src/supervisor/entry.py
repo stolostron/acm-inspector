@@ -8,6 +8,8 @@ from apiServer import *
 from etcd import *
 from cpuAnalysis import *
 from memoryAnalysis import *
+from thanos import *
+from apiServerObjects import *
 from colorama import Fore, Back, Style
 import urllib3
 import sys
@@ -48,6 +50,8 @@ def main():
         etcd = checkEtcdStatus(start_time, end_time, step)
         cpu = checkCPUUsage(start_time, end_time, step)
         memory = checkMemoryUsage(start_time, end_time, step)
+        thanos = checkThanosStatus(start_time, end_time, step)
+        apiObjet = checkAPIServerObjects(start_time, end_time, step)
     else: #if route is observability thanos
         sizing = checkACMHubClusterUtilization()        
     
