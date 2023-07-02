@@ -58,6 +58,7 @@ def etcdDBSize(pc,startTime, endTime, step):
         etcd_data_trend_df.plot(title="Etcd DB size Details in MB",figsize=(30, 15))
         plt.savefig('../../output/breakdown/etcd-size-detail.png')
         saveCSV(etcd_data_trend_df,'etcd-size-detail')
+        plt.close('all')
 
         """ 
         ax=df.plot(title="Node (Worker) CPU Utilisation Percent Rate")
@@ -81,7 +82,8 @@ def etcdDBSize(pc,startTime, endTime, step):
         #etcd_data_sum_trend_df =  etcd_data_sum_trend_df.pivot( columns='instance',values='value')
         etcd_data_sum_trend_df.plot(title="Etcd DB size in MB",figsize=(30, 15))
         plt.savefig('../../output/etcd-size.png')
-        saveCSV(etcd_data_sum_trend_df,'etcd-size',True)    
+        saveCSV(etcd_data_sum_trend_df,'etcd-size',True) 
+        plt.close('all')   
     except Exception as e:
         print(Fore.RED+"Error in getting etcd db size in MB: ",e)    
         print(Style.RESET_ALL)
@@ -116,6 +118,7 @@ def etcdDBSizeInUse(pc,startTime, endTime, step):
         etcd_data_trend_df.plot(title="Etcd space consumed Details in MB",figsize=(30, 15))
         plt.savefig('../../output/breakdown/etcd-space-consumed-detail.png')
         saveCSV(etcd_data_trend_df,'etcd-space-consumed-detail')
+        plt.close('all')
 
         # calculating the sum of all the etcd db size - w/o instance details
         etcd_data_sum_trend = pc.custom_query_range(
@@ -132,6 +135,7 @@ def etcdDBSizeInUse(pc,startTime, endTime, step):
         etcd_data_sum_trend_df.plot(title="Etcd space consumed in MB",figsize=(30, 15))
         plt.savefig('../../output/etcd-space-consumed.png')
         saveCSV(etcd_data_sum_trend_df,'etcd-space-consumed',True)
+        plt.close('all')
 
     except Exception as e:
         print(Fore.RED+"Error in getting etcd space in use in MB: ",e)
@@ -168,6 +172,7 @@ def etcdLeaderChanges(pc,startTime, endTime, step):
         etcd_data_trend_df.plot(title="Etcd leader election counts Details",figsize=(30, 15))
         plt.savefig('../../output/breakdown/etcd-leader-election-count-detal.png')
         saveCSV(etcd_data_trend_df,'etcd-leader-election-count-detail')
+        plt.close('all')
 
         # calculating the sum of all the leader changes - w/o instance details
         etcd_data_sum_trend = pc.custom_query_range(
@@ -183,7 +188,8 @@ def etcdLeaderChanges(pc,startTime, endTime, step):
         etcd_data_sum_trend_df.rename(columns={"value": "etcdDBLeaderElection"}, inplace = True)
         etcd_data_sum_trend_df.plot(title="Etcd leader election counts",figsize=(30, 15))
         plt.savefig('../../output/etcd-leader-election-count.png')
-        saveCSV(etcd_data_sum_trend_df,'etcd-leader-election-count',True)     
+        saveCSV(etcd_data_sum_trend_df,'etcd-leader-election-count',True) 
+        plt.close('all')    
     except Exception as e:
         print(Fore.RED+"Error in getting leader election counts in etcd: ",e)
         print(Style.RESET_ALL)

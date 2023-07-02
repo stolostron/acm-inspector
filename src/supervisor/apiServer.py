@@ -96,6 +96,7 @@ def apiServerObjectCount(pc,startTime, endTime, step) :
         apiserver_data_trend_df.plot(title="Trend of API Server Object Count",figsize=(30, 15))
         plt.savefig('../../output/breakdown/apiserver-resource-count.png')
         saveCSV(apiserver_data_trend_df, "apiserver-resource-count")
+        plt.close('all')
     except Exception as e:
         print(Fore.RED+"Error in getting API Server Object Count: ",e)
         print(Style.RESET_ALL)
@@ -127,6 +128,7 @@ def apiServerObjectCreationCount(pc,startTime, endTime, step) :
         apiserver_data_trend_df.plot(title="Trend of API Server Object Creation Count",figsize=(30, 15))
         plt.savefig('../../output/breakdown/apiserver-resource-creation-count.png')
         saveCSV(apiserver_data_trend_df, "apiserver-resource-creation-count")
+        plt.close('all')
     except Exception as e:
         print(Fore.RED+"Error in getting API Server Object Creation Count or No new objects created ...",e)
         print(Style.RESET_ALL)
@@ -158,6 +160,7 @@ def apiServerRequestByObject(pc,startTime, endTime, step) :
         apiserver_data_trend_df.plot(title="Trend of API Server Request Count by Object",figsize=(30, 15))
         plt.savefig('../../output/breakdown/apiserver-request-count-by-object.png')
         saveCSV(apiserver_data_trend_df, "apiserver-request-count-by-object")
+        plt.close('all')
     except Exception as e:
         print(Fore.RED+"Error in getting API Server Request Count by Object: ",e)
         print(Style.RESET_ALL)

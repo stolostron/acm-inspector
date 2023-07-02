@@ -72,6 +72,7 @@ def apiServerObjectCount(pc,startTime, endTime, step):
             apiserver_data_trend_df.plot(title=titleName,figsize=(30, 15))
             plt.savefig(figName)
             saveCSV(apiserver_data_trend_df, csvName,True)
+            plt.close('all')
         except Exception as e:
             print(Fore.RED+"Error in getting API Server Object Count: ",e)
             print(Style.RESET_ALL)

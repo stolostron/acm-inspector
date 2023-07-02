@@ -60,6 +60,7 @@ def managedClusterCount(pc,startTime, endTime, step):
         setInitialDF(managed_cluster_add_df)
         saveCSV( managed_cluster_add_df, "managed-cluster-count",True)
         #setInitialDF(managed_cluster_add_df)
+        plt.close('all')
     except Exception as e:
         print(Fore.RED+"Error in getting the number of managed clusters: ", e)
         print(Style.RESET_ALL)
@@ -93,6 +94,7 @@ def acmObsTimeSeriesCount(pc,startTime, endTime, step):
         managed_cluster_add_df.plot(title="Number of TimeSeries being sent to ACM Observability",figsize=(30, 15))
         plt.savefig('../../output/obs-timeseries-count.png')
         saveCSV( managed_cluster_add_df, "obs-timeseries-count",True)
+        plt.close('all')
     except Exception as e:
         print(Fore.RED+"Error in getting the number of timeseries send to ACM Obs - ACM Obs may not be configured: ", e)
         print(Style.RESET_ALL)
@@ -127,6 +129,7 @@ def restartCount(pc,startTime, endTime, step):
         restart_data_trend_df.plot(title="Number of container restarts in ACM pods",figsize=(30, 15))
         plt.savefig('../../output/breakdown/container-restart-count.png')    
         saveCSV( restart_data_trend_df, "container-restart-count")
+        plt.close('all')
 
     except Exception as e:
         print(Fore.RED+"No ACM pods are restarting frequently - all GOOD!!: ",e)
@@ -161,6 +164,7 @@ def checkPV(pc,startTime, endTime, step):
         pv_data_trend_df.plot(title="Amount of percent free space left in PVs needed by ACM",figsize=(30, 15))
         plt.savefig('../../output/breakdown/acm-pv-free-space.png')
         saveCSV( pv_data_trend_df, "acm-pv-free-space")
+        plt.close('all')
 
     except Exception as e:
         print(Fore.RED+"Error - Checking amount of percent free space left in PVs needed by ACM: ",e) 
@@ -199,6 +203,7 @@ def checkContainerCount(pc,startTime, endTime, step):
         container_data_trend_df.plot(title="Number of Pods running in the ACM namespaces",figsize=(30, 15))
         plt.savefig('../../output/breakdown/running-pod-count-acm.png')
         saveCSV( container_data_trend_df, "running-pod-count-acm")
+        plt.close('all')
 
     except Exception as e:
         print(Fore.RED+"Error - Checking number of Pods running in the ACM namespaces: ",e)  
@@ -233,6 +238,7 @@ def majorAlertCount(pc,startTime, endTime, step):
         alert_data_trend_df.plot(title="Alerts currently firing under Hub Cluster",figsize=(30, 15))
         plt.savefig('../../output/breakdown/firing-alert-count.png')
         saveCSV( alert_data_trend_df, "firing-alert-count")
+        plt.close('all')
     except Exception as e:
         print(Fore.RED+"Error in getting all alerts currently firing under Hub Cluster that have triggered more than once: ",e)
         print(Style.RESET_ALL)

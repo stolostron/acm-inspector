@@ -60,6 +60,7 @@ def thanosCompactHalt(pc,startTime, endTime, step):
         compactor_data_trend_df.plot(title="Thanos Compactor Halted",figsize=(30, 15))
         plt.savefig('../../output/thanos-compact-halted.png')
         saveCSV(compactor_data_trend_df[['CompactorHalted']],'thanos-compact-halted',True)
+        plt.close('all')
   
     except Exception as e:
         print(Fore.RED+"Error in thanos compactor halt data: ",e)    
@@ -98,6 +99,7 @@ def thanosRecvSync90(pc,startTime, endTime, step):
         recvsync90_data_trend_df.plot(title="Thanos receiver resync 90th percentile",figsize=(30, 15))
         plt.savefig('../../output/thanos-recv-sync-90.png')
         saveCSV(recvsync90_data_trend_df,'thanos-recv-sync-90',True)
+        plt.close('all')
   
     except Exception as e:
         print(Fore.RED+"Error in getting Thanos Reciever Sync 90th percentile: ",e)    
@@ -138,6 +140,7 @@ def thanosRecvSync95(pc,startTime, endTime, step):
         recvsync90_data_trend_df.plot(title="Thanos receiver resync 95th percentile",figsize=(30, 15))
         plt.savefig('../../output/thanos-recv-sync-95.png')
         saveCSV(recvsync90_data_trend_df,'thanos-recv-sync-95',True)
+        plt.close('all')
   
     except Exception as e:
         print(Fore.RED+"Error in getting Thanos Reciever Sync 95th percentile: ",e)    
@@ -177,6 +180,7 @@ def thanosRecvSync99(pc,startTime, endTime, step):
         recvsync90_data_trend_df.plot(title="Thanos receiver resync 99th percentile",figsize=(30, 15))
         plt.savefig('../../output/thanos-recv-sync-99.png')
         saveCSV(recvsync90_data_trend_df,'thanos-recv-sync-99',True)
+        plt.close('all')
   
     except Exception as e:
         print(Fore.RED+"Error in getting Thanos Reciever Sync 99th percentile: ",e)    
@@ -214,6 +218,7 @@ def thanosRecvGrpcError(pc,startTime, endTime, step):
         recvsync90_data_trend_df.plot(title="Thanos receiver GRPC Error",figsize=(30, 15))
         plt.savefig('../../output/breakdown/thanos-recv-grpc-error.png')
         saveCSV(recvsync90_data_trend_df,'thanos-recv-grpc-error')
+        plt.close('all')
   
     except Exception as e:
         print(Fore.RED+"Error in getting Thanos Reciever GRPC Error: ",e)    
