@@ -3,7 +3,7 @@
 ## Motivation
 
 Red Hat Advanced Cluster Management (RHACM) is a product that uses several operators, containers, stateful sets etc to managed a fleet of clusters. There is a [must-gather](https://github.com/stolostron/must-gather) script that can gather data from an installation that is having issues and that data can be uploaded for Engineers to debug. However it is not easy to determine the current health of RHACM. If we could to it, perhaps problems could be resolved much faster. This project attempts to solve that problem. If you run `python entry.py prom` you will get a read out of the current state of RHACM.
-There is an equally string secondary motivation that has come up lately. We need an elegant way to collect existing data from a Hub Server that gives an idea of how stressed the system is. From this data, we should be able to infer how much more managed clusters will this Hub cluster be able to handle. 
+There is an equally strong secondary motivation that has come up lately. We need an elegant way to collect existing data from a Hub Server that gives an idea of how stressed the system is. From this data, we should be able to infer how much more managed clusters will this Hub cluster be able to handle. 
 
 ## Work-in-Progress
 

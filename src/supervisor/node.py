@@ -1,9 +1,16 @@
 from kubernetes import client, config
 from colorama import Fore, Back, Style
 import sys
+from utility import *
+
+import pandas
 
 def checkNodeStatus(debug=False):
+    print(Back.LIGHTYELLOW_EX+"")
+    print("************************************************************************************************")
     print("Node Health Check")
+    print("************************************************************************************************")
+    print(Style.RESET_ALL)
     status = True
     
 
@@ -20,19 +27,32 @@ def checkNodeStatus(debug=False):
 
     try:
         nodes=v1.list_node(_request_timeout=1) 
-        nodeList={}  
+        nodeDetailsList=[]
+        nodeDetails={}  
+        node_df = pandas.DataFrame()
         for node in nodes.items:
             #print(node.metadata.name)
             #print(node.spec)
-            nodeList['name']=node.metadata.name
+            nodeDetails['name']=node.metadata.name
             #nodeList['spec']=node.spec
             #print(node.status.conditions)
             for mc in node.status.conditions:
                 #print(mc.type,"::",mc.status )
-                nodeList[mc.type]=mc.status
-            if debug: nodeList['spec']=node.spec
-            print(nodeList) 
+                nodeDetails[mc.type]=mc.status
+            if debug: nodeDetails['spec']=node.spec
+            #print(nodeDetails) 
+            nodeDetailsList.append(nodeDetails)
+        
+        node_df = pandas.DataFrame.from_records(nodeDetailsList)  
+        print(node_df.to_markdown()) 
+        node_df["Ready"]=node_df["Ready"].astype(bool)
+        
+        if False in node_df["Ready"].values :
+            print("Problematic Nodes")
+            print(node_df[node_df["Ready"] == False])
+            status= False
 
+        saveCSV( node_df, "node-list")
         print(Back.LIGHTYELLOW_EX+"")
         print("************************************************************************************************")
         print(" Node Health Check passed ============ ", status)

@@ -45,15 +45,16 @@ def main():
     mch = checkMCHStatus()
 
     if tsdb == "prom" : #if route is cluster prom
-        cont = checkACMContainerStatus(start_time, end_time, step)
-        api = checkAPIServerStatus(start_time, end_time, step)
-        etcd = checkEtcdStatus(start_time, end_time, step)
-        cpu = checkCPUUsage(start_time, end_time, step)
-        memory = checkMemoryUsage(start_time, end_time, step)
-        thanos = checkThanosStatus(start_time, end_time, step)
-        apiObjet = checkAPIServerObjects(start_time, end_time, step)
+         cont = checkACMContainerStatus(start_time, end_time, step)
+         api = checkAPIServerStatus(start_time, end_time, step)
+         etcd = checkEtcdStatus(start_time, end_time, step)
+         cpu = checkCPUUsage(start_time, end_time, step)
+         memory = checkMemoryUsage(start_time, end_time, step)
+         thanos = checkThanosStatus(start_time, end_time, step)
+         apiObjet = checkAPIServerObjects(start_time, end_time, step)
     else: #if route is observability thanos
-        sizing = checkACMHubClusterUtilization()        
+         sizing = checkACMHubClusterUtilization() 
+
     
     mc = checkManagedClusterStatus()
     node = checkNodeStatus()

@@ -2,6 +2,8 @@ from ast import And
 from kubernetes import client, config
 from colorama import Fore, Back, Style
 import sys
+import pandas
+from utility import *
 
 def checkManagedClusterStatus(debug=False):
     
@@ -20,30 +22,9 @@ def checkManagedClusterStatus(debug=False):
     v1 = client.CustomObjectsApi()
     try:
         mcs = v1.list_cluster_custom_object(group="cluster.open-cluster-management.io", version="v1", plural="managedclusters",_request_timeout=1)
-        ###acluster={}
-        # print(type(mcs))
-        # print("++++++++++++++++++++++++++++++++++++++++++++++")
-        # for mc in mcs.get('items', []):
-        #     print(type(mc))
-        #     print(len(mc))
-        #     for x in range(len(mc)):
-        #         #print(k,":::==++===",v)
-        #         print(type(mc))
-        #         print(x)
-                #print(x['metadata']['name'])
-        #for mc in mcs.items:     
-            #print(mc)
-            ##print("++++++++++++++++++++++++++++++++++++++++++++++")
-            #for x in mc:
-            #    print(x)
-            #    print("++++++++++++++++++++++++++++++++++++++++++++++")
+
         for mc in mcs.get('items', []):  
-            acluster={}  
-            #print("\n")
-            #print(mc['metadata']['name'])
-            #mclusters.append(mc['metadata']['name'])
-            #print (mclusters,"::",mc['metadata']['creationTimestamp'])
-            #print(mc['metadata']['creationTimestamp'])
+            acluster={}
             acluster['managedName']=mc['metadata']['name']
             acluster['creationTimestamp']=mc['metadata']['creationTimestamp']
 
@@ -68,32 +49,78 @@ def checkManagedClusterStatus(debug=False):
             mclusters.append(acluster)
             if debug: print(acluster)
             #print("++++++++++++++++++++++++++++++++++++++++++++++")
-        print(mclusters)
+        #print(mclusters)
+        # This just gives the status of the mananged clusters - not the addons yet
+        mclusters_df = pandas.DataFrame.from_records(mclusters)  
+        print(mclusters_df.to_markdown()) 
+        saveCSV(mclusters_df, "managed-cluster-list")
+
+        if False in mclusters_df["health"].values :
+            print("\n Problematic Clusters")
+            print(mclusters_df[mclusters_df["health"] != True])
+            status= False
+
         print(Back.LIGHTYELLOW_EX+"")
         print("************************************************************************************************")
         print("Managed Cluster Health Check passed ============ ", summaryStatus)
         print("************************************************************************************************")
         print(Style.RESET_ALL)
 
-        #for x in mclusters:
-        #    checkManagedClusterAddonStatus(x)
+        print(Back.LIGHTYELLOW_EX+"")
+        print("************************************************************************************************")
+        print("Managed Cluster Addon Health Check")
+        print("************************************************************************************************")
+        print(Style.RESET_ALL)
+
+        # This gives the addon status for each managed cluster.
+        managedClusterAddonList=[]
         for x in mclusters:
             for k,v in x.items():
                 if (k=="managedName") :
-                    checkManagedClusterAddonStatus(v,debug)
+                     managedClusterAddon = checkManagedClusterAddonStatus(v,debug)
+                     managedClusterAddonList.append(managedClusterAddon)
     
+        managedClusterAddonList_df = pandas.DataFrame.from_records(managedClusterAddonList)  
+        if debug: print(managedClusterAddonList_df.to_markdown()) 
+        saveCSV(managedClusterAddonList_df, "Managed-cluster-addon-list")
+
+        analyzeAddonHealth(managedClusterAddonList_df,debug)
+
     except Exception as e:
         print(Fore.RED+"Failure: ",e) 
         sys.exit("Cluster may be down, or credentials may be wrong, or simply not connected")   
         print(Style.RESET_ALL)
+
+    print(Back.LIGHTYELLOW_EX+"")
+    print("************************************************************************************************")
+    print(" Managed Cluster Addon Health Check passed ============ ", summaryStatus)
+    print("************************************************************************************************")
+    print(Style.RESET_ALL)
+
     return status
 
+def analyzeAddonHealth(mcAddonList_df, debug) :
+
+    print("Summarazing the Addon Healths on Managed clusters \n")
+    print("Raw data in csv form for manual analysis is saved in output\breakdown\Managed-cluster-addon-list.csv \n")
+    #print(mcAddonList_df.dtypes)
+
+    # Iterate over the dataframe columns
+    for column in mcAddonList_df :
+        if column != 'managedName' :
+            columnSeriesObj = mcAddonList_df[column]
+            print('\nAddon Name : ', column)
+            #print(columnSeriesObj.value_counts(dropna=False))
+            print("Number of Managed clusters with Healthy addon: ",(columnSeriesObj.values == True).sum())
+            print("Number of Managed clusters with Unhealthy addon: ",(columnSeriesObj.values == False).sum())
+            print("Number of Managed clusters with Not installed addon: ",(columnSeriesObj.isna().sum().sum()))
+            if debug: print('Managed clusters breakdown : ', columnSeriesObj.values)
 
 def checkManagedClusterAddonStatus(managedCluster, debug=False): 
 
     status = True
     summaryStatus = True
-    print("Checking Addon Health of ",managedCluster) 
+    #print("Checking Addon Health of ",managedCluster) 
     addonCluster={}
     addonCluster['managedName']=managedCluster
     
@@ -124,16 +151,19 @@ def checkManagedClusterAddonStatus(managedCluster, debug=False):
                                 #print(status)   
             #print("\n")
                             addonCluster[mc['metadata']['name']]=status
-            
-            
+
+        #print(addonCluster)  
     except Exception as e:
         print(Fore.RED+"Failure: ",e)
         sys.exit("Cluster may be down, or credentials may be wrong, or simply not connected")
         print(Style.RESET_ALL)
-    print(addonCluster)
-    print(Back.LIGHTYELLOW_EX+"")
-    print("************************************************************************************************")
-    print(" Managed Cluster Addon Health Check passed ============ ", summaryStatus)
-    print("************************************************************************************************")
-    print(Style.RESET_ALL)
-    return status
+    
+    # This print will not scal if we have 10s of clusters
+    #print(addonCluster)
+    # print(Back.LIGHTYELLOW_EX+"")
+    # print("************************************************************************************************")
+    # print(" Managed Cluster Addon Health Check passed ============ ", summaryStatus)
+    # print("************************************************************************************************")
+    # print(Style.RESET_ALL)
+    # not returning status for now.
+    return addonCluster
