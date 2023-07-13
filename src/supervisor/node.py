@@ -27,10 +27,10 @@ def checkNodeStatus(debug=False):
 
     try:
         nodes=v1.list_node(_request_timeout=1) 
-        nodeDetailsList=[]
-        nodeDetails={}  
+        nodeDetailsList=[] 
         node_df = pandas.DataFrame()
         for node in nodes.items:
+            nodeDetails={}
             #print(node.metadata.name)
             #print(node.spec)
             nodeDetails['name']=node.metadata.name

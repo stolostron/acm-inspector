@@ -10,6 +10,7 @@ from cpuAnalysis import *
 from memoryAnalysis import *
 from thanos import *
 from apiServerObjects import *
+from managedClusterNodes import *
 from colorama import Fore, Back, Style
 import urllib3
 import sys
@@ -58,6 +59,7 @@ def main():
     
     mc = checkManagedClusterStatus()
     node = checkNodeStatus()
+    getManagedClusterNodeCount()
     saveMasterDF()
     print(Back.LIGHTYELLOW_EX+"")
     print("************************************************************************************************")
