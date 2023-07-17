@@ -44,6 +44,7 @@ def main():
     print(Style.RESET_ALL)
    
     mch = checkMCHStatus()
+    node = checkNodeStatus()
 
     if tsdb == "prom" : #if route is cluster prom
          cont = checkACMContainerStatus(start_time, end_time, step)
@@ -54,13 +55,13 @@ def main():
          thanos = checkThanosStatus(start_time, end_time, step)
          apiObjet = checkAPIServerObjects(start_time, end_time, step)
     else: #if route is observability thanos
+         # does not work yet
          sizing = checkACMHubClusterUtilization() 
-
     
     mc = checkManagedClusterStatus()
-    node = checkNodeStatus()
     getManagedClusterNodeCount()
     saveMasterDF()
+
     print(Back.LIGHTYELLOW_EX+"")
     print("************************************************************************************************")
     print("End ACM Health Check")

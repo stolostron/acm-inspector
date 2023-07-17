@@ -3,3 +3,4 @@ prometheus_api_client
 oauthlib
 colorama
 tabulate
+numpy

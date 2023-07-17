@@ -34,7 +34,11 @@ def checkAPIServerObjects(startTime, endTime, step):
 def apiServerObjectCount(pc,startTime, endTime, step):
 
     print("Key APi Server Objects Count")
-    objects=['secrets','configmaps','serviceaccounts','clusterrolebindings.rbac.authorization.k8s.io','rolebindings.rbac.authorization.k8s.io','clusterroles.rbac.authorization.k8s.io','roles.rbac.authorization.k8s.io','leases.coordination.k8s.io','configurationpolicies.policy.open-cluster-management.io','manifestworks.work.open-cluster-management.io']
+    objects=['secrets','configmaps','serviceaccounts','clusterrolebindings.rbac.authorization.k8s.io','rolebindings.rbac.authorization.k8s.io',
+             'clusterroles.rbac.authorization.k8s.io','roles.rbac.authorization.k8s.io','leases.coordination.k8s.io',
+             'configurationpolicies.policy.open-cluster-management.io','manifestworks.work.open-cluster-management.io',
+             'placements.cluster.open-cluster-management.io','subscriptions.apps.open-cluster-management.io','applications.app.k8s.io',
+             'applications.argoproj.io','applicationsets.argoproj.io']
     for obj in objects:
         print("We are checking for ",obj)
         leading_query = 'sum(apiserver_storage_objects{resource="'
