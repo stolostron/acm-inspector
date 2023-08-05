@@ -106,7 +106,7 @@ def checkNodeStatus(debug=False):
         print("Quick Node Analysis....:")
         print("Count of nodes....",ncount)
         print("Count of master nodes....",ncount_master)
-        print("Count of master nodes....",ncount_worker)
+        print("Count of worker nodes....",ncount_worker)
         print("Is this a compact cluster with schedulable masters....",n_compact)
         print("Master Node CPU VCore count....",nmaster_cpu_core)
         print("Worker Node CPU VCore count....",nworker_cpu_core)

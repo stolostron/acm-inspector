@@ -53,6 +53,8 @@ def promConnect():
         c = client.Configuration()
         config.load_config(client_configuration = c)
         api_token = c.api_key['authorization']
+        for k,v in c.api_key.items():
+            print(k,v)
 
         #connects to prometheus
         pc = PrometheusConnect(url=prom_url, headers={"Authorization": "{}".format(api_token)}, disable_ssl=True)
@@ -131,7 +133,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage"], ax = ax, secondary_y = True)
             plt.title("Combined Master CPU chart")
             plt.savefig('../../output/master-cpu.png')
 
@@ -144,7 +146,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage"], ax = ax, secondary_y = True)
             
             plt.axhline(y = nodeDetails["sumCPUVCoreMaster"], linestyle = 'dashed', label = "Master Node Capacity") 
             plt.axhline(y = nodeDetails["sumCPUVCoreWorker"], linestyle = 'dashed', label = "Worker Node Capacity")
@@ -188,7 +190,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB","OtherMemUsageGB"], ax = ax, secondary_y = True)
             plt.title("Combined Master Master Node Memory chart")
             plt.savefig('../../output/master-memory.png')
         
@@ -199,7 +201,7 @@ def saveMasterDF():
             #             title="Combined Master Master Node Memory chart", kind="line", figsize=(30, 15))
             fig, ax = plt.subplots(figsize=(30,15))
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB"], ax = ax, secondary_y = True) 
+            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB","OtherMemUsageGB"], ax = ax, secondary_y = True) 
 
             plt.axhline(y = nodeDetails["sumMemoryGiBMaster"], linestyle = 'dashed', label = "Master Node Capacity") 
             plt.axhline(y = nodeDetails["sumMemoryGiBWorker"], linestyle = 'dashed', label = "Worker Node Capacity") 

@@ -24,6 +24,7 @@ def checkMemoryUsage(startTime, endTime, step):
     status=kubeAPIMemUsage(pc,startTime, endTime, step)
     status=ACMMemUsage(pc,startTime, endTime, step)
     status=ACMDetailMemUsage(pc,startTime, endTime, step)
+    status=OtherMemUsage(pc,startTime, endTime, step)
     
 
     
@@ -288,6 +289,43 @@ def ACMDetailMemUsage(pc,startTime, endTime, step):
     except Exception as e:
         print(Fore.RED+"Error in getting memory details for ACM: ",e)    
         print(Style.RESET_ALL)
+    print("=============================================")
+   
+    status=True
+    return status
+
+def OtherMemUsage(pc,startTime, endTime, step):
+
+    print("Total Memory usage for Others GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "OtherMemUsageGB"}, inplace = True)
+        print(acm_cpu_df[['OtherMemUsageGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "OtherMemUsageGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="Other Memory usage GB",figsize=(30, 15))
+        plt.savefig('../../output/other-mem-usage.png')
+        saveCSV(acm_cpu_trend_df,"other-mem-usage",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory for Other: ",e)  
+        print(Style.RESET_ALL)  
     print("=============================================")
    
     status=True

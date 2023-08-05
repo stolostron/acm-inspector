@@ -24,6 +24,7 @@ def checkCPUUsage(startTime, endTime, step):
     status=kubeAPICPUUsage(pc,startTime, endTime, step)
     status=ACMCPUUsage(pc,startTime, endTime, step)
     status=ACMDetailCPUUsage(pc,startTime, endTime, step)
+    status=OtherCPUUsage(pc,startTime, endTime, step)
     
 
     
@@ -225,7 +226,7 @@ def kubeAPICPUUsage(pc,startTime, endTime, step):
     print("Total Kube API Server CPU Core usage")
 
     try:
-        kubeapi_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="openshift-kube-apiserver"})')
+        kubeapi_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"openshift-kube-apiserver|openshift-etcd"})')
 
         kubeapi_cpu_df = MetricSnapshotDataFrame(kubeapi_cpu)
         kubeapi_cpu_df["value"]=kubeapi_cpu_df["value"].astype(float)
@@ -233,7 +234,7 @@ def kubeAPICPUUsage(pc,startTime, endTime, step):
         print(kubeapi_cpu_df[['KubeAPICPUCoreUsage']].to_markdown())
 
         kubeapi_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="openshift-kube-apiserver"})',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"openshift-kube-apiserver|openshift-etcd"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -326,6 +327,42 @@ def ACMDetailCPUUsage(pc,startTime, endTime, step):
     except Exception as e:
         print(Fore.RED+"Error in getting cpu details for ACM: ",e)
         print(Style.RESET_ALL)    
+    print("=============================================")
+   
+    status=True
+    return status
+def OtherCPUUsage(pc,startTime, endTime, step):
+
+    print("Total CPU Core usage - Other")
+
+    try:
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "OtherCPUCoreUsage"}, inplace = True)
+        print(acm_cpu_df[['OtherCPUCoreUsage']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "OtherCPUCoreUsage"}, inplace = True)
+        acm_cpu_trend_df.plot(title="Other CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/other-cpu-usage.png')
+        saveCSV(acm_cpu_trend_df,"other-cpu-usage",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu for Others: ",e)  
+        print(Style.RESET_ALL)  
     print("=============================================")
    
     status=True

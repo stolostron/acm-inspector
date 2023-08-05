@@ -19,6 +19,7 @@ def checkThanosStatus(startTime, endTime, step):
 
     #pc=promConnect()
 
+    status=thanosCompactToDo(pc,startTime, endTime, step)
     status=thanosCompactHalt(pc,startTime, endTime, step)
     status=thanosRecvSync90(pc,startTime, endTime, step)
     status=thanosRecvSync95(pc,startTime, endTime, step)
@@ -33,6 +34,42 @@ def checkThanosStatus(startTime, endTime, step):
     print(Style.RESET_ALL)
     return status
  
+
+def thanosCompactToDo(pc,startTime, endTime, step):
+
+    print("Is Thanos Compact Todo Compactions Caught up?")
+
+    try:
+        compactor_data = pc.custom_query('acm_thanos_compact_todo_compactions{}')
+
+        compactor_data_df = MetricSnapshotDataFrame(compactor_data)
+        compactor_data_df["value"]=compactor_data_df["value"].astype(float)
+        compactor_data_df.rename(columns={"value": "CompactorToDo"}, inplace = True)
+        print(compactor_data_df[['instance','CompactorToDo']].to_markdown())
+
+        compactor_data_trend = pc.custom_query_range(
+        query='acm_thanos_compact_todo_compactions{}',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        compactor_data_trend_df = MetricRangeDataFrame(compactor_data_trend)
+        compactor_data_trend_df["value"]=compactor_data_trend_df["value"].astype(float)
+        compactor_data_trend_df.index= pandas.to_datetime(compactor_data_trend_df.index, unit="s")
+        compactor_data_trend_df.rename(columns={"value": "CompactorToDo"}, inplace = True)
+        compactor_data_trend_df.plot(title="Thanos Compactor To Do compactions",figsize=(30, 15))
+        plt.savefig('../../output/thanos-compact-todo-compaction.png')
+        saveCSV(compactor_data_trend_df[['CompactorToDo']],'thanos-compact-todo-compaction',True)
+        plt.close('all')
+  
+    except Exception as e:
+        print(Fore.RED+"Error in gathering thanos compactor to do compaction data (may be it is up to date): ",e)    
+        print(Style.RESET_ALL)
+    print("=============================================")
+   
+    status=True
+    return status       
 
 def thanosCompactHalt(pc,startTime, endTime, step):
 
@@ -63,12 +100,12 @@ def thanosCompactHalt(pc,startTime, endTime, step):
         plt.close('all')
   
     except Exception as e:
-        print(Fore.RED+"Error in thanos compactor halt data: ",e)    
+        print(Fore.RED+"Error in gathering thanos compactor halt data: ",e)    
         print(Style.RESET_ALL)
     print("=============================================")
    
     status=True
-    return status       
+    return status 
 
 def thanosRecvSync90(pc,startTime, endTime, step):
 
