@@ -25,6 +25,7 @@ def checkMemoryUsage(startTime, endTime, step):
     status=ACMMemUsage(pc,startTime, endTime, step)
     status=ACMDetailMemUsage(pc,startTime, endTime, step)
     status=OtherMemUsage(pc,startTime, endTime, step)
+    status=OtherDetailMemUsage(pc,startTime, endTime, step)
     
 
     
@@ -299,7 +300,7 @@ def OtherMemUsage(pc,startTime, endTime, step):
     print("Total Memory usage for Others GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -307,7 +308,7 @@ def OtherMemUsage(pc,startTime, endTime, step):
         print(acm_cpu_df[['OtherMemUsageGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)',
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -325,6 +326,43 @@ def OtherMemUsage(pc,startTime, endTime, step):
 
     except Exception as e:
         print(Fore.RED+"Error in getting Memory for Other: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def OtherDetailMemUsage(pc,startTime, endTime, step):
+
+    print("Total Detail Memory usage for Others GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "OtherDetailMemUsageGB"}, inplace = True)
+        print(acm_cpu_df[['namespace','OtherDetailMemUsageGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        acm_cpu_trend_df =  acm_cpu_trend_df.pivot( columns='namespace',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "OtherDetailMemUsageGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="Other Detail Memory usage GB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/other-detail-mem-usage.png')
+        saveCSV(acm_cpu_trend_df,"other-detail-mem-usage")
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Detail Memory for Other: ",e)  
         print(Style.RESET_ALL)  
     print("=============================================")
    
