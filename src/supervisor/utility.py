@@ -177,7 +177,6 @@ def saveMasterDF():
             #plt.legend()
             plt.title("Combined Master Worker Node CPU chart")
             plt.savefig('../../output/master-workernode-cpu.png')            
-
     except Exception as e:
         print(Fore.RED+"Failure in drawing graph Combined Master CPU chart - probably metrics are missing: ",e)  
         print(Style.RESET_ALL)  
@@ -228,7 +227,6 @@ def saveMasterDF():
             #plt.legend()
             plt.title("Combined Master Memory chart")
             plt.savefig('../../output/master-workernode-memory.png')
-
     except Exception as e:
         print(Fore.RED+"Failure in drawing graph Combined Master Memory chart - probably metrics are missing: ",e)  
         print(Style.RESET_ALL)  
@@ -244,7 +242,19 @@ def saveMasterDF():
         plt.savefig('../../output/master-api-etcd.png')
     except Exception as e:
         print(Fore.RED+"Failure in drawing graph Combined Master API-ETCD chart - probably metrics are missing: ",e)  
+        print(Style.RESET_ALL)  
+    try:            
+
+        fig, ax = plt.subplots(figsize=(30,15))  
+
+        masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
+        masterDF.plot(y=["etcdBackendCommitDuration","etcdWalSyncDuration","etcdNetWorkPeerRoundTripDuration","etcdCPUIOWaitDuration"], ax = ax, secondary_y = True) 
+        plt.title("Combined Master ETCD Timing chart") 
+        plt.savefig('../../output/master-etcd-timing.png')
+    except Exception as e:
+        print(Fore.RED+"Failure in drawing graph Combined Master API-ETCD chart - probably metrics are missing: ",e)  
         print(Style.RESET_ALL)      
+
     try:
         # the column names can be derived dynamically from the dataframe or apiServerObjects.py module
         # masterDF.plot(y=["ManagedClusterCount", "APIServersecretsCount","APIServerconfigmapsCount","APIServerserviceaccountsCount",
