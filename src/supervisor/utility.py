@@ -39,7 +39,7 @@ def promConnect():
             promRoute = custom_object_api.get_namespaced_custom_object(
                 "route.openshift.io", "v1", "openshift-monitoring", "routes", "thanos-querier")
             prom_url = "https://{}".format(promRoute['spec']['host'])
-            print("Connecting to ACM Hub at URL: ",prom_url)
+            #print("Connecting to ACM Hub at URL: ",prom_url)
         else:
             # Get the Prometheus URL from the Route object.
             custom_object_api = client.CustomObjectsApi()
@@ -47,14 +47,14 @@ def promConnect():
                 "route.openshift.io", "v1", "open-cluster-management-observability", "routes", "rbac-query-proxy")
             #if using observability, use below
             prom_url = "https://{}/".format(promRoute['spec']['host'])
-            print("Connecting to ACM Hub at URL: ",prom_url)    
+            #print("Connecting to ACM Hub at URL: ",prom_url)    
 
         # Get Kubernetes API token.
         c = client.Configuration()
         config.load_config(client_configuration = c)
         api_token = c.api_key['authorization']
-        for k,v in c.api_key.items():
-            print(k,v)
+        #for k,v in c.api_key.items():
+        #    print(k,v)
 
         #connects to prometheus
         pc = PrometheusConnect(url=prom_url, headers={"Authorization": "{}".format(api_token)}, disable_ssl=True)
@@ -189,7 +189,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB","OtherMemUsageGB"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageRSSGB","ACMMemUsageRSSGB","OtherMemUsageRSSGB"], ax = ax, secondary_y = True)
             plt.title("Combined Master Master Node Memory chart")
             plt.savefig('../../output/master-memory.png')
         
@@ -200,7 +200,7 @@ def saveMasterDF():
             #             title="Combined Master Master Node Memory chart", kind="line", figsize=(30, 15))
             fig, ax = plt.subplots(figsize=(30,15))
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageGB","ACMMemUsageGB","OtherMemUsageGB"], ax = ax, secondary_y = True) 
+            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageRSSGB","ACMMemUsageRSSGB","OtherMemUsageRSSGB","KubeAPIMemUsageWSSGB","ACMMemUsageWSSGB","OtherMemUsageWSSGB"], ax = ax, secondary_y = True) 
 
             plt.axhline(y = nodeDetails["sumMemoryGiBMaster"], linestyle = 'dashed', label = "Master Node Capacity") 
             plt.axhline(y = nodeDetails["sumMemoryGiBWorker"], linestyle = 'dashed', label = "Worker Node Capacity") 
@@ -212,7 +212,7 @@ def saveMasterDF():
             #             title="Combined Master Worker Node Memory chart", kind="line", figsize=(30, 15))
             fig, ax = plt.subplots(figsize=(30,15))
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["KubeAPIMemUsageGB"], ax = ax, secondary_y = True)             
+            masterDF.plot(y=["KubeAPIMemUsageRSSGB","KubeAPIMemUsageWSSGB"], ax = ax, secondary_y = True)             
             plt.axhline(y = nodeDetails["sumMemoryGiBMaster"], linestyle = 'dashed', label = "Master Node Capacity") 
             #plt.legend()
             plt.title("Combined Master Worker Node Memory chart")
@@ -222,7 +222,7 @@ def saveMasterDF():
             #             title="Combined Master Memory chart", kind="line", figsize=(30, 15))
             fig, ax = plt.subplots(figsize=(30,15))
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ACMMemUsageGB"], ax = ax, secondary_y = True)             
+            masterDF.plot(y=["ACMMemUsageRSSGB","OtherMemUsageRSSGB","ACMMemUsageWSSGB","OtherMemUsageWSSGB"], ax = ax, secondary_y = True)             
             plt.axhline(y = nodeDetails["sumMemoryGiBWorker"], linestyle = 'dashed', label = "Worker Node Capacity") 
             #plt.legend()
             plt.title("Combined Master Memory chart")

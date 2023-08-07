@@ -21,11 +21,16 @@ def checkMemoryUsage(startTime, endTime, step):
     status=clusterMemPctUsed(pc,startTime, endTime, step)
     #status=clusterMemUsage(pc,startTime, endTime, step)
     status=nodeMemUsage(pc,startTime, endTime, step)
-    status=kubeAPIMemUsage(pc,startTime, endTime, step)
-    status=ACMMemUsage(pc,startTime, endTime, step)
-    status=ACMDetailMemUsage(pc,startTime, endTime, step)
-    status=OtherMemUsage(pc,startTime, endTime, step)
-    status=OtherDetailMemUsage(pc,startTime, endTime, step)
+    status=kubeAPIMemUsageRSS(pc,startTime, endTime, step)
+    status=ACMMemUsageRSS(pc,startTime, endTime, step)
+    status=ACMDetailMemUsageRSS(pc,startTime, endTime, step)
+    status=OtherMemUsageRSS(pc,startTime, endTime, step)
+    status=OtherDetailMemUsageRSS(pc,startTime, endTime, step)
+    status=kubeAPIMemUsageWSS(pc,startTime, endTime, step)
+    status=ACMMemUsageWSS(pc,startTime, endTime, step)
+    status=ACMDetailMemUsageWSS(pc,startTime, endTime, step)
+    status=OtherMemUsageWSS(pc,startTime, endTime, step)
+    status=OtherDetailMemUsageWSS(pc,startTime, endTime, step)
     
 
     
@@ -38,6 +43,9 @@ def checkMemoryUsage(startTime, endTime, step):
      
 def clusterMemCapacity(pc,startTime, endTime, step):
 
+    # Refer OCP Dashboard - Kubernnetes / Compute Resources / Cluster
+    # Graph - Memory Utilization
+    # Query - 1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=""}) / sum(node_memory_MemTotal_bytes{job="node-exporter",cluster=""})
     print("Total Cluster Memory Capacity GB")
 
     try:
@@ -74,11 +82,20 @@ def clusterMemCapacity(pc,startTime, endTime, step):
     return status
 
 def clusterMemUsed(pc,startTime, endTime, step):
+    
+    # Refer OCP Dashboard - Kubernnetes / Compute Resources / Cluster
+    # Graph - Memory Usage (w/o cache)
+    # Query - sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!=""}) by (namespace)
+    
+    # Was used originally but changing it to use
 
+    # Refer OCP Dashboard - Kubernnetes / Compute Resources / Cluster
+    # Graph - Memory Utilization
+    # Query - 1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=""}) / sum(node_memory_MemTotal_bytes{job="node-exporter",cluster=""})
     print("Total Cluster Memory usage GB")
 
     try:
-        node_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!=""})/(1024*1024*1024)')
+        node_cpu = pc.custom_query('(sum(node_memory_MemTotal_bytes{job="node-exporter",cluster=""}) -sum(:node_memory_MemAvailable_bytes:sum{cluster=""}) )/(1024*1024*1024)')
 
         node_cpu_df = MetricSnapshotDataFrame(node_cpu)
         node_cpu_df["value"]=node_cpu_df["value"].astype(float)
@@ -86,7 +103,7 @@ def clusterMemUsed(pc,startTime, endTime, step):
         print(node_cpu_df[['ClusterMemUsageGB']].to_markdown())
 
         node_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!=""})/(1024*1024*1024)',
+        query='(sum(node_memory_MemTotal_bytes{job="node-exporter",cluster=""}) -sum(:node_memory_MemAvailable_bytes:sum{cluster=""}) )/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -112,6 +129,9 @@ def clusterMemUsed(pc,startTime, endTime, step):
 
 def clusterMemPctUsed(pc,startTime, endTime, step):
 
+    # Refer OCP Dashboard - Kubernnetes / Compute Resources / Cluster
+    # Graph - Memory Utilization
+    # Query - 1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=""}) / sum(node_memory_MemTotal_bytes{job="node-exporter",cluster=""})
     print("Total Cluster Memory Pct usage")
 
     try:
@@ -147,21 +167,47 @@ def clusterMemPctUsed(pc,startTime, endTime, step):
     status=True
     return status
 
-
 def nodeMemUsage(pc,startTime, endTime, step):
 
+    # Refer OCP Dashboard - Node Exporter / Use Method/ Node
+    # Graph - Memory Utilization
+    # Query - 1 - instance:node_memory_utilisation:ratio{job="node-exporter", instance="xyz", cluster=""} != 0
+    # decompose the recordiong rules to get the query
+    #       - expr: |
+        #   1 - (
+        #     (
+        #       node_memory_MemAvailable_bytes{job="node-exporter"}
+        #       or
+        #       (
+        #         node_memory_Buffers_bytes{job="node-exporter"}
+        #         +
+        #         node_memory_Cached_bytes{job="node-exporter"}
+        #         +
+        #         node_memory_MemFree_bytes{job="node-exporter"}
+        #         +
+        #         node_memory_Slab_bytes{job="node-exporter"}
+        #       )
+        #     )
+        #   /
+        #     node_memory_MemTotal_bytes{job="node-exporter"}
+        #   )
+        # record: instance:node_memory_utilisation:ratio
+    # do not derive node statistics as an aggregate of container statistics
+    
     print("Memory Usage across Nodes GB")
 
+    sample = '(node_memory_MemTotal_bytes{job="node-exporter"} - ( node_memory_MemAvailable_bytes{job="node-exporter"} or ( node_memory_Buffers_bytes{job="node-exporter"} + node_memory_Cached_bytes{job="node-exporter"} + node_memory_MemFree_bytes{job="node-exporter"} + node_memory_Slab_bytes{job="node-exporter"} ) ))/(1024*1024*1024)'
+
     try:
-        node_cpu = pc.custom_query('(sum(container_memory_rss{job="kubelet",metrics_path="/metrics/cadvisor", cluster="", container!=""}) by (node))/(1024*1024*1024)')
+        node_cpu = pc.custom_query(sample)
 
         node_cpu_df = MetricSnapshotDataFrame(node_cpu)
         node_cpu_df["value"]=node_cpu_df["value"].astype(float)
         node_cpu_df.rename(columns={"value": "NodeMemUsageGB"}, inplace = True)
-        print(node_cpu_df[['node','NodeMemUsageGB']].to_markdown())
+        print(node_cpu_df[['instance','NodeMemUsageGB']].to_markdown())
 
         node_cpu_trend = pc.custom_query_range(
-        query='(sum(container_memory_rss{job="kubelet",metrics_path="/metrics/cadvisor", cluster="", container!=""}) by (node))/(1024*1024*1024)',
+        query=sample,
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -170,7 +216,7 @@ def nodeMemUsage(pc,startTime, endTime, step):
         node_cpu_trend_df = MetricRangeDataFrame(node_cpu_trend)
         node_cpu_trend_df["value"]=node_cpu_trend_df["value"].astype(float)
         node_cpu_trend_df.index= pandas.to_datetime(node_cpu_trend_df.index, unit="s")
-        node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='instance',values='value')
         node_cpu_trend_df.rename(columns={"value": "NodeMemUsageGB"}, inplace = True)
         node_cpu_trend_df.plot(title="Memory Usage across Nodes GB",figsize=(30, 15))
         plt.savefig('../../output/breakdown/node-mem-usage.png')
@@ -185,20 +231,20 @@ def nodeMemUsage(pc,startTime, endTime, step):
     status=True
     return status   
 
-def kubeAPIMemUsage(pc,startTime, endTime, step):
+def kubeAPIMemUsageRSS(pc,startTime, endTime, step):
 
-    print("Total Kube API Server Memory usage GB")
+    print("Total Kube API Server Memory (rss) usage GB")
 
     try:
-        kubeapi_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="openshift-kube-apiserver"})/(1024*1024*1024)')
+        kubeapi_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)')
 
         kubeapi_cpu_df = MetricSnapshotDataFrame(kubeapi_cpu)
         kubeapi_cpu_df["value"]=kubeapi_cpu_df["value"].astype(float)
-        kubeapi_cpu_df.rename(columns={"value": "KubeAPIMemUsageGB"}, inplace = True)
-        print(kubeapi_cpu_df[['KubeAPIMemUsageGB']].to_markdown())
+        kubeapi_cpu_df.rename(columns={"value": "KubeAPIMemUsageRSSGB"}, inplace = True)
+        print(kubeapi_cpu_df[['KubeAPIMemUsageRSSGB']].to_markdown())
 
         kubeapi_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="openshift-kube-apiserver"})/(1024*1024*1024)',
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -208,31 +254,31 @@ def kubeAPIMemUsage(pc,startTime, endTime, step):
         kubeapi_cpu_trend_df["value"]=kubeapi_cpu_trend_df["value"].astype(float)
         kubeapi_cpu_trend_df.index= pandas.to_datetime(kubeapi_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        kubeapi_cpu_trend_df.rename(columns={"value": "KubeAPIMemUsageGB"}, inplace = True)
-        kubeapi_cpu_trend_df.plot(title="Kube API Server Memory usage GB",figsize=(30, 15))
-        plt.savefig('../../output/kubeapi-mem-usage.png')
-        saveCSV(kubeapi_cpu_trend_df,"kubeapi-mem-usage",True)
+        kubeapi_cpu_trend_df.rename(columns={"value": "KubeAPIMemUsageRSSGB"}, inplace = True)
+        kubeapi_cpu_trend_df.plot(title="Kube API Server Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/kubeapi-mem-usage-rss.png')
+        saveCSV(kubeapi_cpu_trend_df,"kubeapi-mem-usage-rss",True)
         plt.close('all')
 
     except Exception as e:
-        print(Fore.RED+"Error in getting memory for Kube API Server: ",e)    
+        print(Fore.RED+"Error in getting memory (rss) for Kube API Server: ",e)    
         print(Style.RESET_ALL)
     print("=============================================")
    
     status=True
     return status  
 
-def ACMMemUsage(pc,startTime, endTime, step):
+def ACMMemUsageRSS(pc,startTime, endTime, step):
 
-    print("Total ACM Memory usage GB")
+    print("Total ACM Memory (rss) usage GB")
 
     try:
         acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
-        acm_cpu_df.rename(columns={"value": "ACMMemUsageGB"}, inplace = True)
-        print(acm_cpu_df[['ACMMemUsageGB']].to_markdown())
+        acm_cpu_df.rename(columns={"value": "ACMMemUsageRSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMMemUsageRSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
         query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)',
@@ -245,31 +291,31 @@ def ACMMemUsage(pc,startTime, endTime, step):
         acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
         acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        acm_cpu_trend_df.rename(columns={"value": "ACMMemUsageGB"}, inplace = True)
-        acm_cpu_trend_df.plot(title="ACM Memory usage GB",figsize=(30, 15))
-        plt.savefig('../../output/acm-mem-usage.png')
-        saveCSV(acm_cpu_trend_df,"acm-mem-usage",True)
+        acm_cpu_trend_df.rename(columns={"value": "ACMMemUsageRSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-mem-usage-rss.png')
+        saveCSV(acm_cpu_trend_df,"acm-mem-usage-rss",True)
         plt.close('all')
 
     except Exception as e:
-        print(Fore.RED+"Error in getting Memory for ACM: ",e)  
+        print(Fore.RED+"Error in getting Memory (rss) for ACM: ",e)  
         print(Style.RESET_ALL)  
     print("=============================================")
    
     status=True
     return status
 
-def ACMDetailMemUsage(pc,startTime, endTime, step):
+def ACMDetailMemUsageRSS(pc,startTime, endTime, step):
 
-    print("Detailed ACM Memory usage GB")
+    print("Detailed ACM Memory (rss) usage GB")
 
     try:
         acm_detail_cpu = pc.custom_query('(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
-        acm_detail_cpu_df.rename(columns={"value": "ACMDetailMemUsageGB"}, inplace = True)
-        print(acm_detail_cpu_df[['namespace','ACMDetailMemUsageGB']].to_markdown())
+        acm_detail_cpu_df.rename(columns={"value": "ACMDetailMemUsageRSSGB"}, inplace = True)
+        print(acm_detail_cpu_df[['namespace','ACMDetailMemUsageRSSGB']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
         query='(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)',
@@ -282,30 +328,30 @@ def ACMDetailMemUsage(pc,startTime, endTime, step):
         acm_detail_cpu_trend_df["value"]=acm_detail_cpu_trend_df["value"].astype(float)
         acm_detail_cpu_trend_df.index= pandas.to_datetime(acm_detail_cpu_trend_df.index, unit="s")
         acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='namespace',values='value')
-        acm_detail_cpu_trend_df.plot(title="ACM Detailed Memory usage GB",figsize=(30, 15))
-        plt.savefig('../../output/breakdown/acm-detail-mem-usage.png')
-        saveCSV(acm_detail_cpu_trend_df,"acm-detail-mem-usage")
+        acm_detail_cpu_trend_df.plot(title="ACM Detailed Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-detail-mem-usage-rss.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-detail-mem-usage-rss")
         plt.close('all')
 
     except Exception as e:
-        print(Fore.RED+"Error in getting memory details for ACM: ",e)    
+        print(Fore.RED+"Error in getting memory (rss) details for ACM: ",e)    
         print(Style.RESET_ALL)
     print("=============================================")
    
     status=True
     return status
 
-def OtherMemUsage(pc,startTime, endTime, step):
+def OtherMemUsageRSS(pc,startTime, endTime, step):
 
-    print("Total Memory usage for Others GB")
+    print("Total Memory (rss) usage for Others GB")
 
     try:
         acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
-        acm_cpu_df.rename(columns={"value": "OtherMemUsageGB"}, inplace = True)
-        print(acm_cpu_df[['OtherMemUsageGB']].to_markdown())
+        acm_cpu_df.rename(columns={"value": "OtherMemUsageRSSGB"}, inplace = True)
+        print(acm_cpu_df[['OtherMemUsageRSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
         query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)',
@@ -318,31 +364,31 @@ def OtherMemUsage(pc,startTime, endTime, step):
         acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
         acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
         #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
-        acm_cpu_trend_df.rename(columns={"value": "OtherMemUsageGB"}, inplace = True)
+        acm_cpu_trend_df.rename(columns={"value": "OtherMemUsageRSSGB"}, inplace = True)
         acm_cpu_trend_df.plot(title="Other Memory usage GB",figsize=(30, 15))
-        plt.savefig('../../output/other-mem-usage.png')
-        saveCSV(acm_cpu_trend_df,"other-mem-usage",True)
+        plt.savefig('../../output/other-mem-usage-rss.png')
+        saveCSV(acm_cpu_trend_df,"other-mem-usage-rss",True)
         plt.close('all')
 
     except Exception as e:
-        print(Fore.RED+"Error in getting Memory for Other: ",e)  
+        print(Fore.RED+"Error in getting Memory (rss) for Other: ",e)  
         print(Style.RESET_ALL)  
     print("=============================================")
    
     status=True
     return status
 
-def OtherDetailMemUsage(pc,startTime, endTime, step):
+def OtherDetailMemUsageRSS(pc,startTime, endTime, step):
 
-    print("Total Detail Memory usage for Others GB")
+    print("Total Detail Memory (rss) usage for Others GB")
 
     try:
         acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
-        acm_cpu_df.rename(columns={"value": "OtherDetailMemUsageGB"}, inplace = True)
-        print(acm_cpu_df[['namespace','OtherDetailMemUsageGB']].to_markdown())
+        acm_cpu_df.rename(columns={"value": "OtherDetailMemUsageRSSGB"}, inplace = True)
+        print(acm_cpu_df[['namespace','OtherDetailMemUsageRSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
         query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)/(1024*1024*1024)',
@@ -355,14 +401,198 @@ def OtherDetailMemUsage(pc,startTime, endTime, step):
         acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
         acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
         acm_cpu_trend_df =  acm_cpu_trend_df.pivot( columns='namespace',values='value')
-        acm_cpu_trend_df.rename(columns={"value": "OtherDetailMemUsageGB"}, inplace = True)
-        acm_cpu_trend_df.plot(title="Other Detail Memory usage GB",figsize=(30, 15))
-        plt.savefig('../../output/breakdown/other-detail-mem-usage.png')
-        saveCSV(acm_cpu_trend_df,"other-detail-mem-usage")
+        acm_cpu_trend_df.rename(columns={"value": "OtherDetailMemUsageRSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="Other Detail Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/other-detail-mem-usage-rss.png')
+        saveCSV(acm_cpu_trend_df,"other-detail-mem-usage-rss")
         plt.close('all')
 
     except Exception as e:
-        print(Fore.RED+"Error in getting Detail Memory for Other: ",e)  
+        print(Fore.RED+"Error in getting Detail Memory (rss) for Other: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def kubeAPIMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Total Kube API Server Memory (wss) usage GB")
+
+    try:
+        kubeapi_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)')
+
+        kubeapi_cpu_df = MetricSnapshotDataFrame(kubeapi_cpu)
+        kubeapi_cpu_df["value"]=kubeapi_cpu_df["value"].astype(float)
+        kubeapi_cpu_df.rename(columns={"value": "KubeAPIMemUsageWSSGB"}, inplace = True)
+        print(kubeapi_cpu_df[['KubeAPIMemUsageWSSGB']].to_markdown())
+
+        kubeapi_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        kubeapi_cpu_trend_df = MetricRangeDataFrame(kubeapi_cpu_trend)
+        kubeapi_cpu_trend_df["value"]=kubeapi_cpu_trend_df["value"].astype(float)
+        kubeapi_cpu_trend_df.index= pandas.to_datetime(kubeapi_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        kubeapi_cpu_trend_df.rename(columns={"value": "KubeAPIMemUsageWSSGB"}, inplace = True)
+        kubeapi_cpu_trend_df.plot(title="Kube API Server Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/kubeapi-mem-usage-wss.png')
+        saveCSV(kubeapi_cpu_trend_df,"kubeapi-mem-usage-wss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting memory (wss) for Kube API Server: ",e)    
+        print(Style.RESET_ALL)
+    print("=============================================")
+   
+    status=True
+    return status  
+
+def ACMMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Total ACM Memory (wss) usage GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMMemUsageWSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMMemUsageWSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMMemUsageWSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-mem-usage-wss.png')
+        saveCSV(acm_cpu_trend_df,"acm-mem-usage-wss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (wss) for ACM: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMDetailMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Detailed ACM Memory (wss) usage GB")
+
+    try:
+        acm_detail_cpu = pc.custom_query('(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)')
+
+        acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
+        acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
+        acm_detail_cpu_df.rename(columns={"value": "ACMDetailMemUsageWSSGB"}, inplace = True)
+        print(acm_detail_cpu_df[['namespace','ACMDetailMemUsageWSSGB']].to_markdown())
+
+        acm_detail_cpu_trend = pc.custom_query_range(
+        query='(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_detail_cpu_trend_df = MetricRangeDataFrame(acm_detail_cpu_trend)
+        acm_detail_cpu_trend_df["value"]=acm_detail_cpu_trend_df["value"].astype(float)
+        acm_detail_cpu_trend_df.index= pandas.to_datetime(acm_detail_cpu_trend_df.index, unit="s")
+        acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='namespace',values='value')
+        acm_detail_cpu_trend_df.plot(title="ACM Detailed Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-detail-mem-usage-wss.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-detail-mem-usage-wss")
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting memory (wss) details for ACM: ",e)    
+        print(Style.RESET_ALL)
+    print("=============================================")
+   
+    status=True
+    return status
+
+def OtherMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Total Memory (wss) usage for Others GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "OtherMemUsageWSSGB"}, inplace = True)
+        print(acm_cpu_df[['OtherMemUsageWSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "OtherMemUsageWSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="Other Memory usage GB",figsize=(30, 15))
+        plt.savefig('../../output/other-mem-usage-wss.png')
+        saveCSV(acm_cpu_trend_df,"other-mem-usage-wss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (wss) for Other: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def OtherDetailMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Total Detail Memory (wss) usage for Others GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "OtherDetailMemUsageWSSGB"}, inplace = True)
+        print(acm_cpu_df[['namespace','OtherDetailMemUsageWSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        acm_cpu_trend_df =  acm_cpu_trend_df.pivot( columns='namespace',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "OtherDetailMemUsageWSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="Other Detail Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/other-detail-mem-usage-wss.png')
+        saveCSV(acm_cpu_trend_df,"other-detail-mem-usage-wss")
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Detail Memory (wss) for Other: ",e)  
         print(Style.RESET_ALL)  
     print("=============================================")
    
