@@ -23,7 +23,8 @@ This is very much work in progress.
 
 Connection to in-cluster Prometheus works from OCP 4.10 upwards. That is because of route changes in open-shift-monitoring namespace.
 
-## To run this
+## To run this using your own python env
+This has been tested using python 3.9.12. But if you do not want the hassle of setting this all up, use the Docker method.
 
 - clone this git repo
 - cd src/supervisor
@@ -31,6 +32,26 @@ Connection to in-cluster Prometheus works from OCP 4.10 upwards. That is because
 - install dependencies `pip install -r requirements.txt`
 - run `python entry.py prom`
 - `if you` run `python entry.py prom 2>&1 | tee ../../output/report.txt` then all the output on the screen will also be redirected to `output/report.txt` file.
+
+## Using Docker
+1. To Build
+      ```
+      docker build -t acm-inspector .
+      ```
+1. Or if you cannot build, you can simply download the image and make it locally available.
+      ```
+      docker pull quay.io/bjoydeep/acm-inspector:latest
+      ```      
+1. To Debug
+      ```
+      docker run -it acm-inspector /bin/sh
+      ```
+1. To Run
+      ```
+      docker run -e OC_CLUSTER_URL=https://api.xxx.com:6443 -e OC_TOKEN=sha256~xyz -v /tmp:/acm-inspector/output quay.io/bjoydeep/acm-inspector
+      ```
+      _Note: The image name needs to be changed from `quay.io/bjoydeep/acm-inspector` to `acm-inspector` if you are using the local docker build. And the volume (-v) points to `/tmp` for local machine. This should/could be changed depending on your need._
+
 
 ### Result
 

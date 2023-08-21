@@ -1,11 +1,10 @@
-__pycache__/
-*.pyc
+.git
+**/*.DS_Store
+**/*__pycache__/
+**/*.pyc
 output/*.png
 output/*.csv
 output/*.txt
 output/breakdown/*.png
 output/breakdown/*.csv
-.DS_Store
 output/breakdown
-output/breakdown/README.md
-

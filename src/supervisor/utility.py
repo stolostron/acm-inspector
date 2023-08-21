@@ -6,6 +6,7 @@ import datetime
 import pandas
 from colorama import Fore, Back, Style
 import matplotlib.pyplot as plt
+import os
 
 # To be able to start the dataframe merge, we need this global variable
 initialDF = pandas.DataFrame()
@@ -24,7 +25,23 @@ def setNodeDetails(details) :
     nodeDetails['sumMemoryGiBWorker']=details['sumMemoryGiBWorker']
 
 
+def createSubdir() :
+    # Specify the directory name you want to create
+    subdir_name = "breakdown"
 
+    # Get the current working directory
+    current_dir = os.getcwd()
+
+    # Construct the full path to the subdirectory
+    subdir_path = os.path.join(current_dir, "..","..","output",subdir_name)
+
+    try:
+        os.makedirs(subdir_path)
+    except Exception as e:
+        print(Fore.RED+"Breakdown subdir probably exists: ",e)  
+        print(Style.RESET_ALL)    
+
+    print(f"Subdirectory '{subdir_name}' created in '{subdir_path}'.")
 
 
 def promConnect():

@@ -17,6 +17,7 @@ import sys
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from datetime import datetime
 import matplotlib.pyplot as plt
+import os
 
 #Fore(text color)	BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET
 #Back(for highlight)	BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET
@@ -43,6 +44,7 @@ def main():
     print("************************************************************************************************")
     print(Style.RESET_ALL)
    
+    createSubdir()
     mch = checkMCHStatus()
     node = checkNodeStatus()
 
