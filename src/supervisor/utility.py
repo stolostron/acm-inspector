@@ -150,7 +150,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage","ACMObsCPUCoreUsage","ACMOthCPUCoreUsage"], ax = ax, secondary_y = True)
             plt.title("Combined Master CPU chart")
             plt.savefig('../../output/master-cpu.png')
 
@@ -163,7 +163,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage","ACMObsCPUCoreUsage","ACMOthCPUCoreUsage"], ax = ax, secondary_y = True)
             
             plt.axhline(y = nodeDetails["sumCPUVCoreMaster"], linestyle = 'dashed', label = "Master Node Capacity") 
             plt.axhline(y = nodeDetails["sumCPUVCoreWorker"], linestyle = 'dashed', label = "Worker Node Capacity")
@@ -206,7 +206,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageRSSGB","ACMMemUsageRSSGB","OtherMemUsageRSSGB"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageRSSGB","ACMMemUsageRSSGB","OtherMemUsageRSSGB","ACMOthMemUsageRSSGB","ACMObsMemUsageRSSGB","KubeAPIMemUsageWSSGB","ACMMemUsageWSSGB","OtherMemUsageWSSGB","ACMOthMemUsageWSSGB","ACMObsMemUsageWSSGB"], ax = ax, secondary_y = True)
             plt.title("Combined Master Master Node Memory chart")
             plt.savefig('../../output/master-memory.png')
         
@@ -217,7 +217,7 @@ def saveMasterDF():
             #             title="Combined Master Master Node Memory chart", kind="line", figsize=(30, 15))
             fig, ax = plt.subplots(figsize=(30,15))
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageRSSGB","ACMMemUsageRSSGB","OtherMemUsageRSSGB","KubeAPIMemUsageWSSGB","ACMMemUsageWSSGB","OtherMemUsageWSSGB"], ax = ax, secondary_y = True) 
+            masterDF.plot(y=["ClusterMemUsageGB","ClusterMemCapacityGB","KubeAPIMemUsageRSSGB","ACMMemUsageRSSGB","OtherMemUsageRSSGB","ACMOthMemUsageRSSGB","ACMObsMemUsageRSSGB","KubeAPIMemUsageWSSGB","ACMMemUsageWSSGB","OtherMemUsageWSSGB","ACMOthMemUsageWSSGB","ACMObsMemUsageWSSGB"], ax = ax, secondary_y = True) 
 
             plt.axhline(y = nodeDetails["sumMemoryGiBMaster"], linestyle = 'dashed', label = "Master Node Capacity") 
             plt.axhline(y = nodeDetails["sumMemoryGiBWorker"], linestyle = 'dashed', label = "Worker Node Capacity") 
@@ -239,7 +239,7 @@ def saveMasterDF():
             #             title="Combined Master Memory chart", kind="line", figsize=(30, 15))
             fig, ax = plt.subplots(figsize=(30,15))
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ACMMemUsageRSSGB","OtherMemUsageRSSGB","ACMMemUsageWSSGB","OtherMemUsageWSSGB"], ax = ax, secondary_y = True)             
+            masterDF.plot(y=["ACMMemUsageRSSGB","OtherMemUsageRSSGB","ACMOthMemUsageRSSGB","ACMObsMemUsageRSSGB","ACMMemUsageWSSGB","OtherMemUsageWSSGB","ACMOthMemUsageWSSGB","ACMObsMemUsageWSSGB"], ax = ax, secondary_y = True)             
             plt.axhline(y = nodeDetails["sumMemoryGiBWorker"], linestyle = 'dashed', label = "Worker Node Capacity") 
             #plt.legend()
             plt.title("Combined Master Memory chart")

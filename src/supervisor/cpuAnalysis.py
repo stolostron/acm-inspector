@@ -26,6 +26,8 @@ def checkCPUUsage(startTime, endTime, step):
     status=ACMDetailCPUUsage(pc,startTime, endTime, step)
     status=OtherCPUUsage(pc,startTime, endTime, step)
     status=OtherDetailCPUUsage(pc,startTime, endTime, step)
+    status=ACMObsCPUUsage(pc,startTime, endTime, step)
+    status=ACMOtherCPUUsage(pc,startTime, endTime, step)
     
 
     
@@ -400,6 +402,80 @@ def OtherDetailCPUUsage(pc,startTime, endTime, step):
 
     except Exception as e:
         print(Fore.RED+"Error in getting Detail cpu for Others: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMObsCPUUsage(pc,startTime, endTime, step):
+
+    print("Total ACM Obs CPU Core usage")
+
+    try:
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management-observability"})')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMObsCPUCoreUsage"}, inplace = True)
+        print(acm_cpu_df[['ACMObsCPUCoreUsage']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management-observability"})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMObsCPUCoreUsage"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Obs CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/acm-obs-cpu-usage.png')
+        saveCSV(acm_cpu_trend_df,"acm-obs-cpu-usage",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu for ACM Obs: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMOtherCPUUsage(pc,startTime, endTime, step):
+
+    print("Total ACM Other CPU Core usage")
+
+    try:
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMOthCPUCoreUsage"}, inplace = True)
+        print(acm_cpu_df[['ACMOthCPUCoreUsage']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMOthCPUCoreUsage"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Other CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/acm-oth-cpu-usage.png')
+        saveCSV(acm_cpu_trend_df,"acm-oth-cpu-usage",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu for ACM Others: ",e)  
         print(Style.RESET_ALL)  
     print("=============================================")
    

@@ -31,6 +31,10 @@ def checkMemoryUsage(startTime, endTime, step):
     status=ACMDetailMemUsageWSS(pc,startTime, endTime, step)
     status=OtherMemUsageWSS(pc,startTime, endTime, step)
     status=OtherDetailMemUsageWSS(pc,startTime, endTime, step)
+    status=ACMObsMemUsageRSS(pc,startTime,endTime, step)
+    status=ACMObsMemUsageWSS(pc,startTime,endTime, step)
+    status=ACMOtherMemUsageRSS(pc,startTime,endTime, step)
+    status=ACMOtherMemUsageWSS(pc,startTime,endTime, step)
     
 
     
@@ -593,6 +597,154 @@ def OtherDetailMemUsageWSS(pc,startTime, endTime, step):
 
     except Exception as e:
         print(Fore.RED+"Error in getting Detail Memory (wss) for Other: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMObsMemUsageRSS(pc,startTime, endTime, step):
+
+    print("Total ACM Obs Memory (rss) usage GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="open-cluster-management-observability"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMObsMemUsageRSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMObsMemUsageRSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="open-cluster-management-observability"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMObsMemUsageRSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Obs Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-obs-mem-usage-rss.png')
+        saveCSV(acm_cpu_trend_df,"acm-obs-mem-usage-rss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (rss) for ACM Obs: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMObsMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Total ACM Obs Memory (wss) usage GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="open-cluster-management-observability"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMObsMemUsageWSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMObsMemUsageWSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="open-cluster-management-observability"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMObsMemUsageWSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Obs Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-obs-mem-usage-wss.png')
+        saveCSV(acm_cpu_trend_df,"acm-obs-mem-usage-wss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (wss) for ACM Obs: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMOtherMemUsageRSS(pc,startTime, endTime, step):
+
+    print("Total ACM Others Memory (rss) usage GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-management|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMOthMemUsageRSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMOthMemUsageRSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMOthMemUsageRSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Other Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-oth-mem-usage-rss.png')
+        saveCSV(acm_cpu_trend_df,"acm-oth-mem-usage-rss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (rss) for ACM Others: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMOtherMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Total ACM Other Memory (wss) usage GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMOthMemUsageWSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMOthMemUsageWSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMOthMemUsageWSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Other Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-oth-mem-usage-wss.png')
+        saveCSV(acm_cpu_trend_df,"acm-oth-mem-usage-wss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (wss) for ACM Others: ",e)  
         print(Style.RESET_ALL)  
     print("=============================================")
    
