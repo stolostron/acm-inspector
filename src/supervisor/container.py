@@ -23,6 +23,7 @@ def checkACMContainerStatus(startTime, endTime, step):
     status=checkPV(pc,startTime, endTime, step)
     status=checkContainerCount(pc,startTime, endTime, step)
     status=majorAlertCount(pc,startTime, endTime, step)
+    status=managedClusterReportingCount(pc,startTime, endTime, step)
 
     
     print(Back.LIGHTYELLOW_EX+"")
@@ -248,3 +249,39 @@ def majorAlertCount(pc,startTime, endTime, step):
     status=True
     return status   
 
+def managedClusterReportingCount(pc,startTime, endTime, step):
+
+    print("Number of managed clusters reporting")
+    
+    try:
+        mc_count_data = pc.custom_query('sum(acm_managed_cluster_info{available="True"})')
+        #mc_count_data = pc.custom_query('count(acm_managed_cluster_labels{})')    
+        mc_count_data_df = MetricSnapshotDataFrame(mc_count_data)
+        mc_count_data_df["value"]=mc_count_data_df["value"].astype(int)
+        mc_count_data_df.rename(columns={"value": "ManagedClusterReportCount"}, inplace = True)
+        print(mc_count_data_df[['ManagedClusterReportCount']].to_markdown())
+
+        managed_cluster_add = pc.custom_query_range(
+        query='sum(acm_managed_cluster_info{available="True"})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        managed_cluster_add_df = MetricRangeDataFrame(managed_cluster_add)
+        managed_cluster_add_df["value"]=managed_cluster_add_df["value"].astype(float)
+        managed_cluster_add_df.index= pandas.to_datetime(managed_cluster_add_df.index, unit="s")
+        managed_cluster_add_df.rename(columns = {'value':'ManagedClusterReportCount'}, inplace = True)
+        managed_cluster_add_df.plot(title="Number of Managed clusters connected and Reporting to Hub",figsize=(30, 15))
+        plt.savefig('../../output/managed-report-cluster-count.png')
+        setInitialDF(managed_cluster_add_df)
+        saveCSV( managed_cluster_add_df, "managed-cluster-report-count",True)
+        #setInitialDF(managed_cluster_add_df)
+        plt.close('all')
+    except Exception as e:
+        print(Fore.RED+"Error in getting the number of managed clusters reporting: ", e)
+        print(Style.RESET_ALL)
+    print("=============================================")
+    
+    status=True
+    return status 

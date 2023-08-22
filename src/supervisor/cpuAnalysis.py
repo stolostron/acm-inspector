@@ -30,6 +30,9 @@ def checkCPUUsage(startTime, endTime, step):
     status=ACMOtherCPUUsage(pc,startTime, endTime, step)
     status=ACMObsDetailCPUUsage(pc,startTime, endTime, step)
     status=ACMObsRecvCPUUsage(pc,startTime, endTime, step)
+    status=ACMSrcPGCPUUsage(pc,startTime, endTime, step)
+    status=ACMSrcIdxCPUUsage(pc,startTime, endTime, step)
+    status=ACMOCMDetailCPUUsage(pc,startTime, endTime, step)
     
 
     
@@ -558,3 +561,114 @@ def ACMObsRecvCPUUsage(pc,startTime, endTime, step):
    
     status=True
     return status    
+
+def ACMSrcPGCPUUsage(pc,startTime, endTime, step):
+
+    print("Total ACM Search Postgres CPU Core usage")
+
+    try:
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-postgres"})')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMSrcPGCPUCoreUsage"}, inplace = True)
+        print(acm_cpu_df[['ACMSrcPGCPUCoreUsage']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-postgres"})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMSrcPGCPUCoreUsage"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Search Postgres CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/acm-src-pg-cpu-usage.png')
+        saveCSV(acm_cpu_trend_df,"acm-src-pg-cpu-usage",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu for ACM Search Postgres: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMSrcIdxCPUUsage(pc,startTime, endTime, step):
+
+    print("Total ACM Search Indexer CPU Core usage")
+
+    try:
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-indexer"})')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMSrcIdxCPUCoreUsage"}, inplace = True)
+        print(acm_cpu_df[['ACMSrcIdxCPUCoreUsage']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-indexer"})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMSrcIdxCPUCoreUsage"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM Search Indexer CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/acm-src-idx-cpu-usage.png')
+        saveCSV(acm_cpu_trend_df,"acm-src-idx-cpu-usage",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu for ACM Search Indexer: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMOCMDetailCPUUsage(pc,startTime, endTime, step):
+
+    print("Detailed ACM Open CLuster Management CPU Core usage")
+
+    try:
+        acm_detail_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management"}) by (container)')
+
+        acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
+        acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
+        acm_detail_cpu_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
+        print(acm_detail_cpu_df[['container','CPUCoreUsage']].to_markdown())
+
+        acm_detail_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management"}) by (container)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_detail_cpu_trend_df = MetricRangeDataFrame(acm_detail_cpu_trend)
+        acm_detail_cpu_trend_df["value"]=acm_detail_cpu_trend_df["value"].astype(float)
+        acm_detail_cpu_trend_df.index= pandas.to_datetime(acm_detail_cpu_trend_df.index, unit="s")
+        acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='container',values='value')
+        acm_detail_cpu_trend_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
+        acm_detail_cpu_trend_df.plot(title="ACM Open CLuster Management Detailed CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-ocm-detail-cpu-usage.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-ocm-detail-cpu-usage")
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu details for ACM Open CLuster Management: ",e)
+        print(Style.RESET_ALL)    
+    print("=============================================")
+   
+    status=True
+    return status
