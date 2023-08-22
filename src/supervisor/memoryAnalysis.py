@@ -35,6 +35,8 @@ def checkMemoryUsage(startTime, endTime, step):
     status=ACMObsMemUsageWSS(pc,startTime,endTime, step)
     status=ACMOtherMemUsageRSS(pc,startTime,endTime, step)
     status=ACMOtherMemUsageWSS(pc,startTime,endTime, step)
+    status=ACMObsDetailMemUsageRSS(pc,startTime, endTime, step)
+    status=ACMObsDetailMemUsageWSS(pc,startTime, endTime, step)
     
 
     
@@ -746,6 +748,78 @@ def ACMOtherMemUsageWSS(pc,startTime, endTime, step):
     except Exception as e:
         print(Fore.RED+"Error in getting Memory (wss) for ACM Others: ",e)  
         print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMObsDetailMemUsageRSS(pc,startTime, endTime, step):
+
+    print("Detailed ACM Obs Memory (rss) usage GB")
+
+    try:
+        acm_detail_cpu = pc.custom_query('(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="open-cluster-management-observability"}) by (container))/(1024*1024*1024)')
+
+        acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
+        acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
+        acm_detail_cpu_df.rename(columns={"value": "ACMObsDetailMemUsageRSSGB"}, inplace = True)
+        print(acm_detail_cpu_df[['container','ACMObsDetailMemUsageRSSGB']].to_markdown())
+
+        acm_detail_cpu_trend = pc.custom_query_range(
+        query='(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="open-cluster-management-observability"}) by (container))/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_detail_cpu_trend_df = MetricRangeDataFrame(acm_detail_cpu_trend)
+        acm_detail_cpu_trend_df["value"]=acm_detail_cpu_trend_df["value"].astype(float)
+        acm_detail_cpu_trend_df.index= pandas.to_datetime(acm_detail_cpu_trend_df.index, unit="s")
+        acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='container',values='value')
+        acm_detail_cpu_trend_df.plot(title="ACM Obs Detailed Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-obs-detail-mem-usage-rss.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-obs-detail-mem-usage-rss")
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting memory (rss) details for ACM Obs: ",e)    
+        print(Style.RESET_ALL)
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMObsDetailMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Detailed ACM Obs Memory (wss) usage GB")
+
+    try:
+        acm_detail_cpu = pc.custom_query('(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="open-cluster-management-observability"}) by (container))/(1024*1024*1024)')
+
+        acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
+        acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
+        acm_detail_cpu_df.rename(columns={"value": "ACMObsDetailMemUsageWSSGB"}, inplace = True)
+        print(acm_detail_cpu_df[['container','ACMObsDetailMemUsageWSSGB']].to_markdown())
+
+        acm_detail_cpu_trend = pc.custom_query_range(
+        query='(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="open-cluster-management-observability"}) by (container))/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_detail_cpu_trend_df = MetricRangeDataFrame(acm_detail_cpu_trend)
+        acm_detail_cpu_trend_df["value"]=acm_detail_cpu_trend_df["value"].astype(float)
+        acm_detail_cpu_trend_df.index= pandas.to_datetime(acm_detail_cpu_trend_df.index, unit="s")
+        acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='container',values='value')
+        acm_detail_cpu_trend_df.plot(title="ACM Obs Detailed Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-obs-detail-mem-usage-wss.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-obs-detail-mem-usage-wss")
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting memory (wss) details for ACM Obs: ",e)    
+        print(Style.RESET_ALL)
     print("=============================================")
    
     status=True

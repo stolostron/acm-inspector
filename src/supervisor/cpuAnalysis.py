@@ -28,6 +28,7 @@ def checkCPUUsage(startTime, endTime, step):
     status=OtherDetailCPUUsage(pc,startTime, endTime, step)
     status=ACMObsCPUUsage(pc,startTime, endTime, step)
     status=ACMOtherCPUUsage(pc,startTime, endTime, step)
+    status=ACMObsDetailCPUUsage(pc,startTime, endTime, step)
     
 
     
@@ -334,6 +335,7 @@ def ACMDetailCPUUsage(pc,startTime, endTime, step):
    
     status=True
     return status
+
 def OtherCPUUsage(pc,startTime, endTime, step):
 
     print("Total CPU Core usage - Other")
@@ -477,6 +479,43 @@ def ACMOtherCPUUsage(pc,startTime, endTime, step):
     except Exception as e:
         print(Fore.RED+"Error in getting cpu for ACM Others: ",e)  
         print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+def ACMObsDetailCPUUsage(pc,startTime, endTime, step):
+
+    print("Detailed ACM Obs CPU Core usage")
+
+    try:
+        acm_detail_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management-observability"}) by (container)')
+
+        acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
+        acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
+        acm_detail_cpu_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
+        print(acm_detail_cpu_df[['container','CPUCoreUsage']].to_markdown())
+
+        acm_detail_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management-observability"}) by (container)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_detail_cpu_trend_df = MetricRangeDataFrame(acm_detail_cpu_trend)
+        acm_detail_cpu_trend_df["value"]=acm_detail_cpu_trend_df["value"].astype(float)
+        acm_detail_cpu_trend_df.index= pandas.to_datetime(acm_detail_cpu_trend_df.index, unit="s")
+        acm_detail_cpu_trend_df =  acm_detail_cpu_trend_df.pivot( columns='container',values='value')
+        acm_detail_cpu_trend_df.rename(columns={"value": "CPUCoreUsage"}, inplace = True)
+        acm_detail_cpu_trend_df.plot(title="ACM Obs Detailed CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/breakdown/acm-obs-detail-cpu-usage.png')
+        saveCSV(acm_detail_cpu_trend_df,"acm-obs-detail-cpu-usage")
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu details for ACM Obs: ",e)
+        print(Style.RESET_ALL)    
     print("=============================================")
    
     status=True
