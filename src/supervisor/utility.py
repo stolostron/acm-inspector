@@ -150,7 +150,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage","ACMObsCPUCoreUsage","ACMOthCPUCoreUsage"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage","ACMObsCPUCoreUsage","ACMOthCPUCoreUsage","ACMObsRecvCPUCoreUsage"], ax = ax, secondary_y = True)
             plt.title("Combined Master CPU chart")
             plt.savefig('../../output/master-cpu.png')
 
@@ -163,7 +163,7 @@ def saveMasterDF():
             fig, ax = plt.subplots(figsize=(30,15)) 
 
             masterDF.plot(y=["ManagedClusterCount"], ax = ax) 
-            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage","ACMObsCPUCoreUsage","ACMOthCPUCoreUsage"], ax = ax, secondary_y = True)
+            masterDF.plot(y=["ClusterCPUCoreUsage","ClusterCPUCoreCap","KubeAPICPUCoreUsage","ACMCPUCoreUsage","OtherCPUCoreUsage","ACMObsCPUCoreUsage","ACMOthCPUCoreUsage","ACMObsRecvCPUCoreUsage"], ax = ax, secondary_y = True)
             
             plt.axhline(y = nodeDetails["sumCPUVCoreMaster"], linestyle = 'dashed', label = "Master Node Capacity") 
             plt.axhline(y = nodeDetails["sumCPUVCoreWorker"], linestyle = 'dashed', label = "Worker Node Capacity")

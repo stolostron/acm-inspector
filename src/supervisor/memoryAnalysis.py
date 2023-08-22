@@ -37,6 +37,8 @@ def checkMemoryUsage(startTime, endTime, step):
     status=ACMOtherMemUsageWSS(pc,startTime,endTime, step)
     status=ACMObsDetailMemUsageRSS(pc,startTime, endTime, step)
     status=ACMObsDetailMemUsageWSS(pc,startTime, endTime, step)
+    status=ACMObsRecvMemUsageRSS(pc,startTime, endTime, step)
+    status=ACMObsRecvMemUsageWSS(pc,startTime, endTime, step)
     
 
     
@@ -824,3 +826,78 @@ def ACMObsDetailMemUsageWSS(pc,startTime, endTime, step):
    
     status=True
     return status
+
+def ACMObsRecvMemUsageRSS(pc,startTime, endTime, step):
+
+    print("Total ACM ObsRecv Memory (rss) usage GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="thanos-receive", namespace="open-cluster-management-observability"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMObsRecvMemUsageRSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMObsRecvMemUsageRSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="thanos-receive", namespace="open-cluster-management-observability"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMObsRecvMemUsageRSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM ObsRecv Memory (rss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-obs-recv-mem-usage-rss.png')
+        saveCSV(acm_cpu_trend_df,"acm-obs-recv-mem-usage-rss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (rss) for ACM ObsRecv: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+def ACMObsRecvMemUsageWSS(pc,startTime, endTime, step):
+
+    print("Total ACM ObsRecv Memory (wss) usage GB")
+
+    try:
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="thanos-receive", image!="",namespace="open-cluster-management-observability"})/(1024*1024*1024)')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMObsRecvMemUsageWSSGB"}, inplace = True)
+        print(acm_cpu_df[['ACMObsRecvMemUsageWSSGB']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="thanos-receive", image!="",namespace="open-cluster-management-observability"})/(1024*1024*1024)',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMObsRecvMemUsageWSSGB"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM ObsRecv Memory (wss) usage GB",figsize=(30, 15))
+        plt.savefig('../../output/acm-obs-recv-mem-usage-wss.png')
+        saveCSV(acm_cpu_trend_df,"acm-obs-recv-mem-usage-wss",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting Memory (wss) for ACM ObsRecv: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status
+
+

@@ -29,6 +29,7 @@ def checkCPUUsage(startTime, endTime, step):
     status=ACMObsCPUUsage(pc,startTime, endTime, step)
     status=ACMOtherCPUUsage(pc,startTime, endTime, step)
     status=ACMObsDetailCPUUsage(pc,startTime, endTime, step)
+    status=ACMObsRecvCPUUsage(pc,startTime, endTime, step)
     
 
     
@@ -520,3 +521,40 @@ def ACMObsDetailCPUUsage(pc,startTime, endTime, step):
    
     status=True
     return status
+
+def ACMObsRecvCPUUsage(pc,startTime, endTime, step):
+
+    print("Total ACM ObsRecv CPU Core usage")
+
+    try:
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management-observability",container="thanos-receive"})')
+
+        acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
+        acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
+        acm_cpu_df.rename(columns={"value": "ACMObsRecvCPUCoreUsage"}, inplace = True)
+        print(acm_cpu_df[['ACMObsRecvCPUCoreUsage']].to_markdown())
+
+        acm_cpu_trend = pc.custom_query_range(
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management-observability",container="thanos-receive"})',
+            start_time=startTime,
+            end_time=endTime,
+            step=step,
+        )
+
+        acm_cpu_trend_df = MetricRangeDataFrame(acm_cpu_trend)
+        acm_cpu_trend_df["value"]=acm_cpu_trend_df["value"].astype(float)
+        acm_cpu_trend_df.index= pandas.to_datetime(acm_cpu_trend_df.index, unit="s")
+        #node_cpu_trend_df =  node_cpu_trend_df.pivot( columns='node',values='value')
+        acm_cpu_trend_df.rename(columns={"value": "ACMObsRecvCPUCoreUsage"}, inplace = True)
+        acm_cpu_trend_df.plot(title="ACM ObsRecv CPU Core usage",figsize=(30, 15))
+        plt.savefig('../../output/acm-obs-recv-cpu-usage.png')
+        saveCSV(acm_cpu_trend_df,"acm-obs-recv-cpu-usage",True)
+        plt.close('all')
+
+    except Exception as e:
+        print(Fore.RED+"Error in getting cpu for ACM ObsRecv: ",e)  
+        print(Style.RESET_ALL)  
+    print("=============================================")
+   
+    status=True
+    return status    
