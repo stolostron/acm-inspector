@@ -24,7 +24,7 @@ def getManagedClusterNodeCount(debug=False):
 
     v1 = client.CustomObjectsApi()
     try:
-        mcs = v1.list_cluster_custom_object(group="internal.open-cluster-management.io", version="v1beta1", plural="managedclusterinfos", _request_timeout=1)
+        mcs = v1.list_cluster_custom_object(group="internal.open-cluster-management.io", version="v1beta1", plural="managedclusterinfos", _request_timeout=60)
        
         for mc in mcs.get('items', []):
             mcnode={}

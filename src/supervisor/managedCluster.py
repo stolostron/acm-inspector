@@ -21,7 +21,7 @@ def checkManagedClusterStatus(debug=False):
 
     v1 = client.CustomObjectsApi()
     try:
-        mcs = v1.list_cluster_custom_object(group="cluster.open-cluster-management.io", version="v1", plural="managedclusters",_request_timeout=1)
+        mcs = v1.list_cluster_custom_object(group="cluster.open-cluster-management.io", version="v1", plural="managedclusters",_request_timeout=60)
 
         for mc in mcs.get('items', []):  
             acluster={}
@@ -72,19 +72,22 @@ def checkManagedClusterStatus(debug=False):
         print("************************************************************************************************")
         print(Style.RESET_ALL)
 
-        # This gives the addon status for each managed cluster.
-        managedClusterAddonList=[]
-        for x in mclusters:
-            for k,v in x.items():
-                if (k=="managedName") :
-                     managedClusterAddon = checkManagedClusterAddonStatus(v,debug)
-                     managedClusterAddonList.append(managedClusterAddon)
-    
-        managedClusterAddonList_df = pandas.DataFrame.from_records(managedClusterAddonList)  
-        if debug: print(managedClusterAddonList_df.to_markdown()) 
-        saveCSV(managedClusterAddonList_df, "Managed-cluster-addon-list")
+        if len(mclusters) < 500 :
+            # This gives the addon status for each managed cluster.
+            managedClusterAddonList=[]
+            for x in mclusters:
+                for k,v in x.items():
+                    if (k=="managedName") :
+                        managedClusterAddon = checkManagedClusterAddonStatus(v,debug)
+                        managedClusterAddonList.append(managedClusterAddon)
+        
+            managedClusterAddonList_df = pandas.DataFrame.from_records(managedClusterAddonList)  
+            if debug: print(managedClusterAddonList_df.to_markdown()) 
+            saveCSV(managedClusterAddonList_df, "Managed-cluster-addon-list")
 
-        analyzeAddonHealth(managedClusterAddonList_df,debug)
+            analyzeAddonHealth(managedClusterAddonList_df,debug)
+        else:
+            print("Skippinng Managed cluster Addon Health Check because there are more than 500 managed clusters")    
 
     except Exception as e:
         print(Fore.RED+"Failure: ",e) 
@@ -129,7 +132,7 @@ def checkManagedClusterAddonStatus(managedCluster, debug=False):
     try:
 
         v1 = client.CustomObjectsApi()
-        mcs = v1.list_namespaced_custom_object(group="addon.open-cluster-management.io", version="v1alpha1", plural="managedclusteraddons", namespace=managedCluster,_request_timeout=1)
+        mcs = v1.list_namespaced_custom_object(group="addon.open-cluster-management.io", version="v1alpha1", plural="managedclusteraddons", namespace=managedCluster,_request_timeout=60)
         for mc in mcs.get('items', []):
             #print("\n")
             if debug: print(mc['metadata']['name'])
