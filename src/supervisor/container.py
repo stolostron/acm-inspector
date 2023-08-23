@@ -18,12 +18,13 @@ def checkACMContainerStatus(startTime, endTime, step):
     status = True
 
     status=managedClusterCount(pc,startTime, endTime, step)
+    status=managedClusterReportingCount(pc,startTime, endTime, step)
     status=acmObsTimeSeriesCount(pc,startTime, endTime, step)
     status=restartCount(pc,startTime, endTime, step)
     status=checkPV(pc,startTime, endTime, step)
     status=checkContainerCount(pc,startTime, endTime, step)
     status=majorAlertCount(pc,startTime, endTime, step)
-    status=managedClusterReportingCount(pc,startTime, endTime, step)
+
 
     
     print(Back.LIGHTYELLOW_EX+"")
