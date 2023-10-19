@@ -30,7 +30,9 @@ This has been tested using python 3.9.12. But if you do not want the hassle of s
 - cd src/supervisor
 - connect to your OpenShift cluster that runs RHACM by `oc login`. You will need a kubeadmin access.
 - install dependencies `pip install -r requirements.txt`
+  - can be pip3 instead of pip depending on your python configuration. That is one more reason to use the docker container
 - run `python entry.py prom`
+  - (same disclaimer.. on my Mac (which is probably not configured well for python)) I used: `python3.11 entry.py prom`
 - `if you` run `python entry.py prom 2>&1 | tee ../../output/report.txt` then all the output on the screen will also be redirected to `output/report.txt` file.
 
 ## Using Docker
