@@ -40,7 +40,7 @@ The big black dots are key drivers of ACM sizing along with the number of cluste
 ACM scaling model is `conditionally independent of the real cluster size`. Ofcourse the number of clusters is still important. You could appreciate that given this model, when we do real performance measurement, we can simulate/create a number of clusters with any size (could be kind cluster, could be Single Node OpenShift clusters) than clusters of specific sizes. It is much simpler to do the former instead of the latter.
 
 So, to trace one line of the flow end to end:
-`Num of apps & policies` drives the `API Server Object target count and size` which in turn drives load on the `ACM App & Policy Operators`. The `ACM App & Policy Operators` are also influenced by the `Cluster Count` - ie number of clusters - into which the applications and policies these have to be replicated to. These in turn creates resources on the `Kube API Server`. These resources are created in `etcd`. Therefore etcd health is one of the key drivers of `ACM Health`. And `etcd` health is also dependent on `Network health` and right `Disk health`.
+`Num of apps & policies` drives the `API Server Object target count and size` which in turn drives load on the `ACM App & Policy Operators`. The `ACM App & Policy Controllers` are also influenced by the `Cluster Count` - ie number of clusters - into which the applications and policies these have to be replicated to. These in turn creates resources on the `Kube API Server`. These resources are created in `etcd`. Therefore etcd health is one of the key drivers of `ACM Health`. And `etcd` health is also dependent on `Network health` and `Disk health`.
 
 ## Work-in-Progress
 
