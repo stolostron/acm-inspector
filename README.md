@@ -30,17 +30,17 @@ Well then you’ve come to the right place! We here aim to reveal, in a not so m
       
 ## ACM Domain Knowledge
 
-One of the main goals of this tool is to investigate around scaling ACM. Below is a causal diagram of ACM from standpoint of scalability. This is definitely not a full complete ACM Causal diagram. That would be much more complex. Let us take a moment to review this figure and get the key idea behind this.
+One of the main goals of this tool is to investigate around scaling ACM. Below is a causal diagram of ACM from standpoint of scalability. This is definitely `not a full complete ACM Causal diagram`. That would be much more complex. Let us take a moment to review this figure and get the key idea behind this.
 ![Causal Diagram describing ACM Scalability Model](/ACMScalabilityCausalDAG.png)
 
 The big black dots are key drivers of ACM sizing along with the number of clusters it is managing. In other words, if we know the :
-- API Server Object target count and size (depends on how many applications and policies are defined on the cluster which depends on it size.)
+- Num of apps & policies (ie how many applications and policies are defined on the cluster) and this depends on the cluster size.
 - Time series count (depends on how large the cluster is and what kind of work is running on them)
 - Resoure count (depends on how large the cluster is and what kind of work is running on them)
 ACM scaling model is `conditionally independent of the real cluster size`. Ofcourse the number of clusters is still important. You could appreciate that given this model, when we do real performance measurement, we can simulate/create a number of clusters with any size (could be kind cluster, could be Single Node OpenShift clusters) than clusters of specific sizes. It is much simpler to do the former instead of the latter.
 
 So, to trace one line of the flow end to end:
-`API Server Object target count and size` drives load on the `ACM App & Policy Operators`. The `ACM App & Policy Operators` are also influenced by the `Cluster Count` - ie number of clusters - into which the applications and policies these have to be replicated to. These in turn creates resources on the `Kube API Server`. These resources are created in `etcd`. Therefore etcd health is one of the key drivers of `ACM Health`. And `etcd` health is also dependent on `Network health` and right `Disk health`.
+`Num of apps & policies` drives the `API Server Object target count and size` which in turn drives load on the `ACM App & Policy Operators`. The `ACM App & Policy Operators` are also influenced by the `Cluster Count` - ie number of clusters - into which the applications and policies these have to be replicated to. These in turn creates resources on the `Kube API Server`. These resources are created in `etcd`. Therefore etcd health is one of the key drivers of `ACM Health`. And `etcd` health is also dependent on `Network health` and right `Disk health`.
 
 ## Work-in-Progress
 
@@ -98,7 +98,32 @@ This has been tested using python 3.9.12. But if you do not want the hassle of s
       - There is `output/breakdown` directory which contains detailed png & csv files containing breakdown metrics for example by namespace or resource etc
       - Under the `output` directory all png & csv files contain metrics are grouped by time `only`
       - This allows us to merge all metrics under a csv called `master.csv` and to create a set of graphs (png) that start with the name `master-*.png`. These visually correlate how the system is performing with time as the number of managed clusters gets added. 
-2. `Current` data is printed out in the screen as below:
+2. The `master.csv` has metrics that corresponding to almost each of the descendants of the big black dots. If some are missing, they should be added - and you can help! Let us take a look at what is there now.
+
+      |Node|Metrics collected|
+      |---|---|
+      |API Server Object target count and size|Yes on count|
+      |ACM App & Policy Operators|Yes|
+      |ACM API|Need to be added - but should be same as API Server|
+      |Kube  API Server|Yes|
+      |etcd|Yes|
+      |etcd-Disk|Yes|
+      |etcd-Network|Yes|
+      |MCO Health|Yes|
+      |Thanos health|Yes|
+      |Obs Health|Can be inferred|
+      |Obs API Health|To be added|
+      |Indexer|Yes|
+      |Postgres|Yes|
+      |Search Health|Can be inferred|
+      |Search API|Need to be added|
+      |ACM Health|Can be inferred|
+      |Cluster Count|Yes|
+      |Num of apps & policies|Yes|
+      |Time Series Count|Yes|
+      |Kubernetes Resource Count|Yes|
+
+3. `Current` data is printed out in the screen as below:
 
 Note: `True` in the ouput means good status (*though this is not fully working yet*).
 ```
