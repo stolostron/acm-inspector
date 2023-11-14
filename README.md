@@ -14,7 +14,7 @@ Well then you’ve come to the right place! We here aim to reveal, in a not so m
 
 ## FAQ
 1. **What is wrong with must-gather ?**
-      - must-gather is great for what it does. The aim here is slightly different. While must gather focus examines the current state using logs and Kube API, this tool focuses more on getting the historical metrics out of the Prometheus on the Hub Server. And along the process, it also looks at data from Custom Resources etc to be able to take a data driven (metric driven) approach. But we are examining if this information can be collected automatically when must-gather is being run as well. After all, this information embellishes what is in must-gather. 
+      - must-gather is great for what it does. The aim here is slightly different. While must gather focus examines the current state using logs and Kube API, this tool focuses more on getting the historical metrics out of the Prometheus on the Hub Server. And along the process, it also looks at data from Custom Resources etc to be able to take a data driven (metric driven) approach. We are evaluating if this information can be collected automatically when must-gather is being run as well. After all, this information embellishes what is in must-gather. 
 1. **Why not SLOs?**
       - Creating SLOs is orthogonal to this effort with some overlap. We do collect data here from metrics. We can expand this to see if SLO values are being met. From the data we can also tell if the usage of ACM is within the defined boundaries of ACM.  And the goal is here to ultimately `get inferences and recommendations automatically` - AND NOT just reporting.
 1. **Why not create dashboards out of this information?**
