@@ -4,3 +4,7 @@ oauthlib
 colorama
 tabulate
 numpy
+networkx
+ipykernel 
+graphviz
+
