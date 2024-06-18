@@ -38,10 +38,14 @@ def apiServerObjectCount(pc,startTime, endTime, step):
              'clusterroles.rbac.authorization.k8s.io','roles.rbac.authorization.k8s.io','leases.coordination.k8s.io',
              'configurationpolicies.policy.open-cluster-management.io','manifestworks.work.open-cluster-management.io',
              'placements.cluster.open-cluster-management.io','subscriptions.apps.open-cluster-management.io','applications.app.k8s.io',
-             'applications.argoproj.io','applicationsets.argoproj.io']
+             'applications.argoproj.io','applicationsets.argoproj.io','policies.policy.open-cluster-management.io']
     for obj in objects:
         print("We are checking for ",obj)
-        leading_query = 'sum(apiserver_storage_objects{resource="'
+        # look at what the OCP dashboard does - max(apiserver_storage_objects{resource!="events"}
+        # max is needed - else we will at least as many rows as master nodes etc.
+        # just run for a resource xyz apiserver_storage_objects{resource="xyz"} 
+        # and the output will tell us why we need max
+        leading_query = 'max(apiserver_storage_objects{resource="'
         trailing_query = '"})'
         current_query = leading_query + obj + trailing_query
         figName = '../../output/apiserver-resource-' + obj + '.png'
@@ -51,6 +55,7 @@ def apiServerObjectCount(pc,startTime, endTime, step):
         #print(current_query)
         #print(figName)
         #print(csvName)
+        #print (nodeDetails.get('numMasterNodes'))
 
         try:
             apiserver_obj_count = pc.custom_query(
