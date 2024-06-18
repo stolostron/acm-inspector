@@ -64,13 +64,6 @@ Connection to in-cluster Prometheus works from OCP 4.10 upwards. That is because
 This has been tested using python 3.9.12. But if you do not want the hassle of setting this all up, use the Docker method.
 
 - clone this git repo
-- Activate venv:
-
-      python -m venv .venv
-      source .venv/bin/activate
-      pip install -r src/supervisor/requirements.txt
-
-- After all work is done, to exit the venv, just run: deactivate     
 - cd src/supervisor
 - connect to your OpenShift cluster that runs RHACM by `oc login`. You will need a kubeadmin access.
 - install dependencies `pip install -r requirements.txt`
@@ -78,7 +71,6 @@ This has been tested using python 3.9.12. But if you do not want the hassle of s
 - run `python entry.py prom`
   - (same disclaimer.. on my Mac (which is probably not configured well for python)) I used: `python3.11 entry.py prom`
 - `if you` run `python entry.py prom 2>&1 | tee ../../output/report.txt` then all the output on the screen will also be redirected to `output/report.txt` file.
-- If you want to run the notebooks under `causal-analysis`, you will have install this: `brew install graphviz` on your macOS.
 
 ## Using Docker
 1. To Build

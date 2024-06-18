@@ -9,5 +9,3 @@ output/breakdown/*.csv
 output/breakdown
 output/breakdown/README.md
 Makefile
-.venv/
-causal-analysis/.ipynb_checkpoints/
