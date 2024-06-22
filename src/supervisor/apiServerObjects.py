@@ -36,9 +36,12 @@ def apiServerObjectCount(pc,startTime, endTime, step):
     print("Key APi Server Objects Count")
     objects=['secrets','configmaps','serviceaccounts','clusterrolebindings.rbac.authorization.k8s.io','rolebindings.rbac.authorization.k8s.io',
              'clusterroles.rbac.authorization.k8s.io','roles.rbac.authorization.k8s.io','leases.coordination.k8s.io',
-             'configurationpolicies.policy.open-cluster-management.io','manifestworks.work.open-cluster-management.io',
+             'manifestworks.work.open-cluster-management.io',
              'placements.cluster.open-cluster-management.io','subscriptions.apps.open-cluster-management.io','applications.app.k8s.io',
-             'applications.argoproj.io','applicationsets.argoproj.io','policies.policy.open-cluster-management.io']
+             'applications.argoproj.io','applicationsets.argoproj.io','policies.policy.open-cluster-management.io',
+             'configurationpolicies.policy.open-cluster-management.io','certificatepolicies.policy.open-cluster-management.io',
+             'iampolicies.policy.open-cluster-management.io','operatorpolicies.policy.open-cluster-management.io',
+             'policyautomations.policy.open-cluster-management.io','policysets.policy.open-cluster-management.io']
     for obj in objects:
         print("We are checking for ",obj)
         # look at what the OCP dashboard does - max(apiserver_storage_objects{resource!="events"}
