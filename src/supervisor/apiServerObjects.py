@@ -41,7 +41,8 @@ def apiServerObjectCount(pc,startTime, endTime, step):
              'applications.argoproj.io','applicationsets.argoproj.io','policies.policy.open-cluster-management.io',
              'configurationpolicies.policy.open-cluster-management.io','certificatepolicies.policy.open-cluster-management.io',
              'iampolicies.policy.open-cluster-management.io','operatorpolicies.policy.open-cluster-management.io',
-             'policyautomations.policy.open-cluster-management.io','policysets.policy.open-cluster-management.io']
+             'policyautomations.policy.open-cluster-management.io','policysets.policy.open-cluster-management.io',
+             'placementbindings.policy.open-cluster-management.io']
     for obj in objects:
         print("We are checking for ",obj)
         # look at what the OCP dashboard does - max(apiserver_storage_objects{resource!="events"}
