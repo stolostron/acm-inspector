@@ -11,6 +11,7 @@ from memoryAnalysis import *
 from thanos import *
 from apiServerObjects import *
 from managedClusterNodes import *
+from policyAnalysis import *
 from colorama import Fore, Back, Style
 import urllib3
 import sys
@@ -56,6 +57,7 @@ def main():
          memory = checkMemoryUsage(start_time, end_time, step)
          thanos = checkThanosStatus(start_time, end_time, step)
          apiObjet = checkAPIServerObjects(start_time, end_time, step)
+         pol = checkPolicyControllers(start_time, end_time, step)
     else: #if route is observability thanos
          # does not work yet
          sizing = checkACMHubClusterUtilization() 
