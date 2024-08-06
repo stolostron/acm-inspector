@@ -1,5 +1,5 @@
 
-FROM quay.io/openshift/origin-cli:4.13 as builder
+FROM quay.io/openshift/origin-cli:4.16 as builder
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 RUN microdnf update -y \
