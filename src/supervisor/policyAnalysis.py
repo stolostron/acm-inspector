@@ -65,7 +65,9 @@ def getRootPolicy(pc,startTime, endTime, step):
     print("Get the details of root policies")
 
     try:
-        root_policy = pc.custom_query('sum(policy_governance_info{type="root"}) by (policy, policy_namespace)')
+        # policy_governance_info{type="root"} =0,1,-1 capture different states.
+        # Therefore total number is found out by using count(policy_governance_info{type="root"})
+        root_policy = pc.custom_query('count(policy_governance_info{type="root"}) by (policy, policy_namespace)')
 
         root_policy_df = MetricSnapshotDataFrame(root_policy)
         root_policy_df["value"]=root_policy_df["value"].astype(float)
@@ -138,9 +140,9 @@ def getReplicatedPolicyControllerResponseTime(pc,startTime, endTime, step):
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[10m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
+    # Thus we use: histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[30m]))  by(le)  )  or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="replicated-policy"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[30m]))  by(le)  )  or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
@@ -149,7 +151,7 @@ def getReplicatedPolicyControllerResponseTime(pc,startTime, endTime, step):
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="replicated-policy"})',
+        query='histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[30m]))  by(le)  )  or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -181,10 +183,9 @@ def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, st
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
-
+    # Thus we use: histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le)) or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (workqueue_queue_duration_seconds_bucket{name="replicated-policy",le="1"})/sum without(le,instance,pod) (workqueue_queue_duration_seconds_count{name="replicated-policy"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
@@ -193,7 +194,7 @@ def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, st
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (workqueue_queue_duration_seconds_bucket{name="replicated-policy",le="1"})/sum without(le,instance,pod) (workqueue_queue_duration_seconds_count{name="replicated-policy"})',
+        query='histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le)) or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -221,6 +222,9 @@ def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, st
 def getReplicatedPolicyStatusChange(pc,startTime, endTime, step):
     print("Get details of the replicated policy status changes")
 
+    # policy_governance_info{type="propagated"} =0,1,-1 capture different states.
+    # Therefore total number is found out by using count(policy_governance_info{type="propagated"})
+    # Total number of non-compliant is found out by using sum(policy_governance_info{type="propagated"})
     # Though this query may not be able detect when 
     # Say we have 2 policies and both are deployed to 3 clusters. 
     # And all are compliant. Now suddenly one day in one of the clusters - the policies start flip flopping. 
@@ -228,6 +232,12 @@ def getReplicatedPolicyStatusChange(pc,startTime, endTime, step):
     # However at an aggregate level, all that we see is - 6 replicated policies were compliant. 
     # And then suddenly that changed to 5 and remained at 5. 
     # But this is an edge case. Therefore we do not complicate our process for now.
+
+    # But should we make it same as getRootPolicySpecChange()
+    # and change it to: rate(controller_runtime_reconcile_time_seconds_count{controller="replicated-policy"}[30m])
+    # Issue may be that replicated-policy controller is called also when the policy spec changes and 
+    # not only when replicated policy status changes
+    # or should we do a derivative of this metric while analyzing,
     try:
         propagated_policy = pc.custom_query('sum(policy_governance_info{type="propagated"})')
 
@@ -313,9 +323,9 @@ def getRootPolicyControllerResponseTimeforSpecChange(pc,startTime, endTime, step
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[10m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
+    # Thus we use: histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec"}[30m]))  by(le)) or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-spec"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec"}[30m]))  by(le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
@@ -324,7 +334,7 @@ def getRootPolicyControllerResponseTimeforSpecChange(pc,startTime, endTime, step
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-spec"})',
+        query='histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec"}[30m]))  by(le)) or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -357,9 +367,9 @@ def getRootPolicyControllerResponseTimeforStatusChange(pc,startTime, endTime, st
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[10m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
+    # Thus we use: histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status"}[30m])) by (le)) or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-status"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status"}[30m])) by (le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
@@ -368,7 +378,7 @@ def getRootPolicyControllerResponseTimeforStatusChange(pc,startTime, endTime, st
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-status"})',
+        query='histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status"}[30m])) by (le)) or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
