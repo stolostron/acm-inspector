@@ -11,4 +11,5 @@ output/breakdown/README.md
 Makefile
 .venv/
 causal-analysis/.ipynb_checkpoints/
+**/.ipynb_checkpoints/
 
