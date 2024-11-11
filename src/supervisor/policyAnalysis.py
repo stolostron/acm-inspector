@@ -145,6 +145,7 @@ def getReplicatedPolicyControllerResponseTime(pc,startTime, endTime, step):
         propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[30m]))  by(le)  )  or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
         propagated_policy_df.rename(columns={"value": "ReplicatedPolicyCtrlResponse95Pctle"}, inplace = True)
         print(propagated_policy_df[['ReplicatedPolicyCtrlResponse95Pctle']].to_markdown())
@@ -159,6 +160,7 @@ def getReplicatedPolicyControllerResponseTime(pc,startTime, endTime, step):
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)    
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
         propagated_policy_number_trend_df.rename(columns={"value": "ReplicatedPolicyCtrlResponse95Pctle"}, inplace = True)
         propagated_policy_number_trend_df.plot(title="95th Percentile replicated-policy reconcile times le 1 se",figsize=(30, 15))
@@ -188,6 +190,7 @@ def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, st
         propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
         propagated_policy_df.rename(columns={"value": "ReplicatedPolicyCtrlWorkQueueResponse95Pctle"}, inplace = True)
         print(propagated_policy_df[['ReplicatedPolicyCtrlWorkQueueResponse95Pctle']].to_markdown())
@@ -202,6 +205,7 @@ def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, st
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)        
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
         propagated_policy_number_trend_df.rename(columns={"value": "ReplicatedPolicyCtrlWorkQueueResponse95Pctle"}, inplace = True)
         propagated_policy_number_trend_df.plot(title="95th Percentile replicated-policy work queue times le 1 se",figsize=(30, 15))
@@ -328,6 +332,7 @@ def getRootPolicyControllerResponseTimeforSpecChange(pc,startTime, endTime, step
         propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec"}[30m]))  by(le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
         propagated_policy_df.rename(columns={"value": "RootPolicySpecCtrlResponse95Pctle"}, inplace = True)
         print(propagated_policy_df[['RootPolicySpecCtrlResponse95Pctle']].to_markdown())
@@ -342,6 +347,7 @@ def getRootPolicyControllerResponseTimeforSpecChange(pc,startTime, endTime, step
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)    
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
         propagated_policy_number_trend_df.rename(columns={"value": "RootPolicySpecCtrlResponse95Pctle"}, inplace = True)
         propagated_policy_number_trend_df.plot(title="95th Percentile root-policy-spec reconcile times le 1 se",figsize=(30, 15))
@@ -372,6 +378,7 @@ def getRootPolicyControllerResponseTimeforStatusChange(pc,startTime, endTime, st
         propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status"}[30m])) by (le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
         propagated_policy_df.rename(columns={"value": "RootPolicyStatusCtrlResponse95Pctle"}, inplace = True)
         print(propagated_policy_df[['RootPolicyStatusCtrlResponse95Pctle']].to_markdown())
@@ -386,6 +393,7 @@ def getRootPolicyControllerResponseTimeforStatusChange(pc,startTime, endTime, st
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)    
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
         propagated_policy_number_trend_df.rename(columns={"value": "RootPolicyStatusCtrlResponse95Pctle"}, inplace = True)
         propagated_policy_number_trend_df.plot(title="95th Percentile root-policy-status reconcile times le 1 se",figsize=(30, 15))
