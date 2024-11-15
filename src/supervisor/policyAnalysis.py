@@ -65,7 +65,9 @@ def getRootPolicy(pc,startTime, endTime, step):
     print("Get the details of root policies")
 
     try:
-        root_policy = pc.custom_query('sum(policy_governance_info{type="root"}) by (policy, policy_namespace)')
+        # policy_governance_info{type="root"} =0,1,-1 capture different states.
+        # Therefore total number is found out by using count(policy_governance_info{type="root"})
+        root_policy = pc.custom_query('count(policy_governance_info{type="root"}) by (policy, policy_namespace)')
 
         root_policy_df = MetricSnapshotDataFrame(root_policy)
         root_policy_df["value"]=root_policy_df["value"].astype(float)
@@ -133,23 +135,24 @@ def getReplicatedPolicy(pc,startTime, endTime, step):
 
 
 def getReplicatedPolicyControllerResponseTime(pc,startTime, endTime, step):
-    print("Get Percentage of replicated-policy reconcile times le 1 sec")
+    print("Get 95th Percentile replicated-policy reconcile times")
 
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[10m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
+    # Thus we use: histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[30m]))  by(le)  )  or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="replicated-policy"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[30m]))  by(le)  )  or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
-        propagated_policy_df.rename(columns={"value": "ReplicatedPolicyCtrlResponsePctle1sec"}, inplace = True)
-        print(propagated_policy_df[['ReplicatedPolicyCtrlResponsePctle1sec']].to_markdown())
+        propagated_policy_df.rename(columns={"value": "ReplicatedPolicyCtrlResponse95Pctle"}, inplace = True)
+        print(propagated_policy_df[['ReplicatedPolicyCtrlResponse95Pctle']].to_markdown())
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="replicated-policy"})',
+        query='histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[30m]))  by(le)  )  or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -157,17 +160,18 @@ def getReplicatedPolicyControllerResponseTime(pc,startTime, endTime, step):
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)    
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
-        propagated_policy_number_trend_df.rename(columns={"value": "ReplicatedPolicyCtrlResponsePctle1sec"}, inplace = True)
-        propagated_policy_number_trend_df.plot(title="Percentage of replicated-policy reconcile times le 1 se",figsize=(30, 15))
-        plt.savefig('../../output/policy-rep-ctrl-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df[['ReplicatedPolicyCtrlResponsePctle1sec']],"policy-rep-ctrl-le1sec-count",True)
-        plt.savefig('../../output/breakdown/policy-rep-ctrl-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df,"policy-rep-ctrl-le1sec-count")
+        propagated_policy_number_trend_df.rename(columns={"value": "ReplicatedPolicyCtrlResponse95Pctle"}, inplace = True)
+        propagated_policy_number_trend_df.plot(title="95th Percentile replicated-policy reconcile times le 1 se",figsize=(30, 15))
+        plt.savefig('../../output/policy-rep-ctrl-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df[['ReplicatedPolicyCtrlResponse95Pctle']],"policy-rep-ctrl-le1sec-count",True)
+        plt.savefig('../../output/breakdown/policy-rep-ctrl-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df,"policy-rep-ctrl-95pctle")
         plt.close('all') 
 
     except Exception as e:
-        print(Fore.RED+"Error in getting Percentage of replicated-policy reconcile times le 1 sec: ",e)
+        print(Fore.RED+"Error in getting 95th Percentile replicated-policy reconcile times: ",e)
         print(Style.RESET_ALL)    
     print("=============================================")
    
@@ -176,24 +180,24 @@ def getReplicatedPolicyControllerResponseTime(pc,startTime, endTime, step):
 
 
 def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, step):
-    print("Get Percentage of replicated-policy controller workqueuing times le 1 sec")
+    print("Get 95th Percentile replicated-policy controller workqueuing times")
 
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
-
+    # Thus we use: histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le)) or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (workqueue_queue_duration_seconds_bucket{name="replicated-policy",le="1"})/sum without(le,instance,pod) (workqueue_queue_duration_seconds_count{name="replicated-policy"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
-        propagated_policy_df.rename(columns={"value": "ReplicatedPolicyCtrlWorkQueueResponsePctle1sec"}, inplace = True)
-        print(propagated_policy_df[['ReplicatedPolicyCtrlWorkQueueResponsePctle1sec']].to_markdown())
+        propagated_policy_df.rename(columns={"value": "ReplicatedPolicyCtrlWorkQueueResponse95Pctle"}, inplace = True)
+        print(propagated_policy_df[['ReplicatedPolicyCtrlWorkQueueResponse95Pctle']].to_markdown())
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (workqueue_queue_duration_seconds_bucket{name="replicated-policy",le="1"})/sum without(le,instance,pod) (workqueue_queue_duration_seconds_count{name="replicated-policy"})',
+        query='histogram_quantile(0.95, sum(rate(workqueue_queue_duration_seconds_bucket{name="replicated-policy"}[30m])) by (le)) or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -201,17 +205,18 @@ def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, st
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)        
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
-        propagated_policy_number_trend_df.rename(columns={"value": "ReplicatedPolicyCtrlWorkQueueResponsePctle1sec"}, inplace = True)
-        propagated_policy_number_trend_df.plot(title="Percentage of replicated-policy work queue times le 1 se",figsize=(30, 15))
-        plt.savefig('../../output/policy-rep-ctrl-wq-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df[['ReplicatedPolicyCtrlWorkQueueResponsePctle1sec']],"policy-rep-ctrl-wq-le1sec-count",True)
-        plt.savefig('../../output/breakdown/policy-rep-ctrl-wq-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df,"policy-rep-ctrl-wq-le1sec-count")
+        propagated_policy_number_trend_df.rename(columns={"value": "ReplicatedPolicyCtrlWorkQueueResponse95Pctle"}, inplace = True)
+        propagated_policy_number_trend_df.plot(title="95th Percentile replicated-policy work queue times le 1 se",figsize=(30, 15))
+        plt.savefig('../../output/policy-rep-ctrl-wq-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df[['ReplicatedPolicyCtrlWorkQueueResponse95Pctle']],"policy-rep-ctrl-wq-le1sec-count",True)
+        plt.savefig('../../output/breakdown/policy-rep-ctrl-wq-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df,"policy-rep-ctrl-wq-95pctle")
         plt.close('all') 
 
     except Exception as e:
-        print(Fore.RED+"Error in getting Percentage of replicated-policy controller workqueuing times le 1 secc: ",e)
+        print(Fore.RED+"Error in getting 95th Percentile replicated-policy controller workqueuing times: ",e)
         print(Style.RESET_ALL)    
     print("=============================================")
    
@@ -221,6 +226,9 @@ def getReplicatedPolicyControllerWorkQueueResponseTime(pc,startTime, endTime, st
 def getReplicatedPolicyStatusChange(pc,startTime, endTime, step):
     print("Get details of the replicated policy status changes")
 
+    # policy_governance_info{type="propagated"} =0,1,-1 capture different states.
+    # Therefore total number is found out by using count(policy_governance_info{type="propagated"})
+    # Total number of non-compliant is found out by using sum(policy_governance_info{type="propagated"})
     # Though this query may not be able detect when 
     # Say we have 2 policies and both are deployed to 3 clusters. 
     # And all are compliant. Now suddenly one day in one of the clusters - the policies start flip flopping. 
@@ -228,6 +236,12 @@ def getReplicatedPolicyStatusChange(pc,startTime, endTime, step):
     # However at an aggregate level, all that we see is - 6 replicated policies were compliant. 
     # And then suddenly that changed to 5 and remained at 5. 
     # But this is an edge case. Therefore we do not complicate our process for now.
+
+    # But should we make it same as getRootPolicySpecChange()
+    # and change it to: rate(controller_runtime_reconcile_time_seconds_count{controller="replicated-policy"}[30m])
+    # Issue may be that replicated-policy controller is called also when the policy spec changes and 
+    # not only when replicated policy status changes
+    # or should we do a derivative of this metric while analyzing,
     try:
         propagated_policy = pc.custom_query('sum(policy_governance_info{type="propagated"})')
 
@@ -306,25 +320,26 @@ def getRootPolicySpecChange(pc,startTime, endTime, step):
 # sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-spec"})
 
 def getRootPolicyControllerResponseTimeforSpecChange(pc,startTime, endTime, step):
-    print("Get Percentage of root-policy-spec reconcile times le 1 sec")
+    print("Get 95th Percentile root-policy-spec reconcile times")
 
     # This metric should be strongly causally related to getRootPolicySpecChange
 
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[10m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
+    # Thus we use: histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec"}[30m]))  by(le)) or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-spec"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec"}[30m]))  by(le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
-        propagated_policy_df.rename(columns={"value": "RootPolicySpecCtrlResponsePctle1sec"}, inplace = True)
-        print(propagated_policy_df[['RootPolicySpecCtrlResponsePctle1sec']].to_markdown())
+        propagated_policy_df.rename(columns={"value": "RootPolicySpecCtrlResponse95Pctle"}, inplace = True)
+        print(propagated_policy_df[['RootPolicySpecCtrlResponse95Pctle']].to_markdown())
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-spec"})',
+        query='histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-spec"}[30m]))  by(le)) or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -332,17 +347,18 @@ def getRootPolicyControllerResponseTimeforSpecChange(pc,startTime, endTime, step
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)    
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
-        propagated_policy_number_trend_df.rename(columns={"value": "RootPolicySpecCtrlResponsePctle1sec"}, inplace = True)
-        propagated_policy_number_trend_df.plot(title="Percentage of root-policy-spec reconcile times le 1 se",figsize=(30, 15))
-        plt.savefig('../../output/policy-root-ctrl-spec-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df[['RootPolicySpecCtrlResponsePctle1sec']],"policy-root-ctrl-spec-le1sec-count",True)
-        plt.savefig('../../output/breakdown/policy-root-ctrl-spec-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df,"policy-root-ctrl-spec-le1sec-count")
+        propagated_policy_number_trend_df.rename(columns={"value": "RootPolicySpecCtrlResponse95Pctle"}, inplace = True)
+        propagated_policy_number_trend_df.plot(title="95th Percentile root-policy-spec reconcile times le 1 se",figsize=(30, 15))
+        plt.savefig('../../output/policy-root-ctrl-spec-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df[['RootPolicySpecCtrlResponse95Pctle']],"policy-root-ctrl-spec-le1sec-count",True)
+        plt.savefig('../../output/breakdown/policy-root-ctrl-spec-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df,"policy-root-ctrl-spec-95pctle")
         plt.close('all') 
 
     except Exception as e:
-        print(Fore.RED+"Error in getting Percentage of root-policy-spec reconcile times le 1 sec: ",e)
+        print(Fore.RED+"Error in getting 95th Percentile root-policy-spec reconcile times: ",e)
         print(Style.RESET_ALL)    
     print("=============================================")
    
@@ -350,25 +366,26 @@ def getRootPolicyControllerResponseTimeforSpecChange(pc,startTime, endTime, step
     return status
 
 def getRootPolicyControllerResponseTimeforStatusChange(pc,startTime, endTime, step):
-    print("Get Percentage of root-policy-status reconcile times le 1 sec")
+    print("Get 95th Percentile root-policy-status reconcile times")
 
     # This metric should be strongly causally related to getReplicatedPolicyStatusChange
 
     # This should have got us the 95th percentike
     # histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="replicated-policy"}[10m])) by (le))
     # however, if no policies are to be replicated, this metric does not change. Therefore we do not have results for this period
-    # Thus for this type of behaviour, we cannot use this technique
+    # Thus we use: histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status"}[30m])) by (le)) or vector(0)
     try:
-        propagated_policy = pc.custom_query('sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-status"})')
+        propagated_policy = pc.custom_query('histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status"}[30m])) by (le)) or vector(0)')
 
         propagated_policy_df = MetricSnapshotDataFrame(propagated_policy)
+        propagated_policy_df.fillna(0,inplace=True)
         propagated_policy_df["value"]=propagated_policy_df["value"].astype(float)
-        propagated_policy_df.rename(columns={"value": "RootPolicyStatusCtrlResponsePctle1sec"}, inplace = True)
-        print(propagated_policy_df[['RootPolicyStatusCtrlResponsePctle1sec']].to_markdown())
+        propagated_policy_df.rename(columns={"value": "RootPolicyStatusCtrlResponse95Pctle"}, inplace = True)
+        print(propagated_policy_df[['RootPolicyStatusCtrlResponse95Pctle']].to_markdown())
 
         
         propagated_policy_number_trend = pc.custom_query_range(
-        query='sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status",le="1"})/sum without(le,instance,pod) (controller_runtime_reconcile_time_seconds_count{controller="root-policy-status"})',
+        query='histogram_quantile(0.95, sum(rate(controller_runtime_reconcile_time_seconds_bucket{controller="root-policy-status"}[30m])) by (le)) or vector(0)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -376,17 +393,18 @@ def getRootPolicyControllerResponseTimeforStatusChange(pc,startTime, endTime, st
 
         propagated_policy_number_trend_df = MetricRangeDataFrame(propagated_policy_number_trend)
         propagated_policy_number_trend_df["value"]=propagated_policy_number_trend_df["value"].astype(float)
+        propagated_policy_number_trend_df.fillna(0,inplace=True)    
         propagated_policy_number_trend_df.index= pandas.to_datetime(propagated_policy_number_trend_df.index, unit="s")
-        propagated_policy_number_trend_df.rename(columns={"value": "RootPolicyStatusCtrlResponsePctle1sec"}, inplace = True)
-        propagated_policy_number_trend_df.plot(title="Percentage of root-policy-status reconcile times le 1 se",figsize=(30, 15))
-        plt.savefig('../../output/policy-root-ctrl-status-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df[['RootPolicyStatusCtrlResponsePctle1sec']],"policy-root-ctrl-status-le1sec-count",True)
-        plt.savefig('../../output/breakdown/policy-root-ctrl-status-le1sec-count.png')
-        saveCSV(propagated_policy_number_trend_df,"policy-root-ctrl-status-le1sec-count")
+        propagated_policy_number_trend_df.rename(columns={"value": "RootPolicyStatusCtrlResponse95Pctle"}, inplace = True)
+        propagated_policy_number_trend_df.plot(title="95th Percentile root-policy-status reconcile times le 1 se",figsize=(30, 15))
+        plt.savefig('../../output/policy-root-ctrl-status-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df[['RootPolicyStatusCtrlResponse95Pctle']],"policy-root-ctrl-status-le1sec-count",True)
+        plt.savefig('../../output/breakdown/policy-root-ctrl-status-95pctle.png')
+        saveCSV(propagated_policy_number_trend_df,"policy-root-ctrl-status-95pctle")
         plt.close('all') 
 
     except Exception as e:
-        print(Fore.RED+"Error in getting Percentage of root-policy-status reconcile times le 1 sec: ",e)
+        print(Fore.RED+"Error in getting 95th Percentile root-policy-status reconcile times: ",e)
         print(Style.RESET_ALL)    
     print("=============================================")
    
