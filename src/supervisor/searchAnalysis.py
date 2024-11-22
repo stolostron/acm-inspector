@@ -42,7 +42,7 @@ def searchAPIRequestDuration(pc, start_time, end_time, step):
 
         # histogram_quantile(0.95, sum(search_api_request_duration_bucket) by (le)) or vector(0) timeseries
         search_api_request_duration_trend = pc.custom_query_range(
-            query="histogram_quantile(0.95, sum(search_api_request_duration_bucket) by (le)) or vector(0)",
+            query="histogram_quantile(0.95, sum(rate(search_api_request_duration_bucket[30m])) by (le)) or vector(0)",
             start_time=start_time,
             end_time=end_time,
             step=step,
@@ -98,15 +98,15 @@ def searchAPIDBConnectionFailed(pc, start_time, end_time, step):
     print("Search API DB Connection Failed")
 
     try:
-        # search_api_db_connection_failed instant value
-        db_conn_failed = pc.custom_query('search_api_db_connection_failed')
+        # sum(rate(search_api_db_connection_failed[30m])) or vector(0) instant value
+        db_conn_failed = pc.custom_query('sum(rate(search_api_db_connection_failed[30m])) or vector(0)')
         db_conn_failed_df = MetricSnapshotDataFrame(db_conn_failed)
         db_conn_failed_df.rename(columns={"value": "SearchAPIDBConnectionFailed"}, inplace=True)
         print(db_conn_failed_df[["SearchAPIDBConnectionFailed"]].to_markdown())
 
-        # search_api_db_connection_failed timeseries
+        # sum(rate(search_api_db_connection_failed[30m])) timeseries
         db_conn_failed_trend = pc.custom_query_range(
-            query="search_api_db_connection_failed",
+            query="sum(rate(search_api_db_connection_failed[30m])) or vector(0)",
             start_time=start_time,
             end_time=end_time,
             step=step,
@@ -139,7 +139,7 @@ def searchAPIDBQueryDuration(pc, start_time, end_time, step):
 
         # histogram_quantile(0.95, sum(search_api_db_query_duration_bucket) by (le)) or vector(0) timeseries
         search_api_db_query_duration_trend = pc.custom_query_range(
-            query="histogram_quantile(0.95, sum(search_api_db_query_duration_bucket) by (le)) or vector(0)",
+            query="histogram_quantile(0.95, sum(rate(search_api_db_query_duration_bucket[30m])) by (le)) or vector(0)",
             start_time=start_time,
             end_time=end_time,
             step=step,
@@ -164,14 +164,14 @@ def searchIndexerRequestCount(pc, start_time, end_time, step):
 
     try:
         # search_indexer_request_count instant value
-        search_indexer_request_count = pc.custom_query('sum(search_indexer_request_count)')
+        search_indexer_request_count = pc.custom_query('sum(rate(search_indexer_request_count[30m])) or vector(0)')
         search_indexer_request_count_df = MetricSnapshotDataFrame(search_indexer_request_count)
         search_indexer_request_count_df.rename(columns={"value": "SearchIndexerRequestCount"}, inplace=True)
         print(search_indexer_request_count_df[["SearchIndexerRequestCount"]].to_markdown())
 
         # search_indexer_request_count timeseries
         search_indexer_request_count_trend = pc.custom_query_range(
-            query="sum(search_indexer_request_count)",
+            query="sum(rate(search_indexer_request_count[30m])) or vector(0)",
             start_time=start_time,
             end_time=end_time,
             step=step,
@@ -204,7 +204,7 @@ def searchIndexerRequestDuration(pc, start_time, end_time, step):
 
         # histogram_quantile(0.95, sum(search_indexer_request_duration_bucket) by (le)) or vector(0) timeseries
         search_indexer_request_duration_trend = pc.custom_query_range(
-            query="histogram_quantile(0.95, sum(search_indexer_request_duration_bucket) by (le)) or vector(0)",
+            query="histogram_quantile(0.95, sum(rate(search_indexer_request_duration_bucket[30m])) by (le)) or vector(0)",
             start_time=start_time,
             end_time=end_time,
             step=step,
@@ -229,14 +229,14 @@ def searchIndexerRequestsInFlight(pc, start_time, end_time, step):
 
     try:
         # search_indexer_requests_in_flight instant value
-        search_indexer_requests_in_flight = pc.custom_query('sum(search_indexer_requests_in_flight)')
+        search_indexer_requests_in_flight = pc.custom_query('sum(rate(search_indexer_requests_in_flight[30m])) or vector(0)')
         search_indexer_requests_in_flight_df = MetricSnapshotDataFrame(search_indexer_requests_in_flight)
         search_indexer_requests_in_flight_df.rename(columns={"value": "SearchIndexerRequestsInFlight"}, inplace=True)
         print(search_indexer_requests_in_flight_df[["SearchIndexerRequestsInFlight"]].to_markdown())
 
         # search_indexer_requests_in_flight timeseries
         search_indexer_requests_in_flight_trend = pc.custom_query_range(
-            query="sum(search_indexer_requests_in_flight)",
+            query="sum(rate(search_indexer_requests_in_flight[30m])) or vector(0)",
             start_time=start_time,
             end_time=end_time,
             step=step,
@@ -267,7 +267,7 @@ def searchIndexerRequestSize(pc, start_time, end_time, step):
 
         # histogram_quantile(0.95, sum(search_indexer_request_size_bucket) by (le)) or vector(0) timeseries
         search_indexer_request_size_trend = pc.custom_query_range(
-            query="histogram_quantile(0.95, sum(search_indexer_request_size_bucket) by (le)) or vector(0)",
+            query="histogram_quantile(0.95, sum(rate(search_indexer_request_size_bucket[30m])) by (le)) or vector(0)",
             start_time=start_time,
             end_time=end_time,
             step=step,
