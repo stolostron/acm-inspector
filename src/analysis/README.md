@@ -17,7 +17,7 @@ The analysis consists of the following steps:
 
 ## Running the Analysis
 
-1. **Step 1**: First, run the `acm-inspector/supervisor` and ensure that the `master.csv` file is created under `acm-inspector/output` as outlined [here](./README.md#to-run-this-using-your-own-python-env).
+1. **Step 1**: First, run the `acm-inspector/supervisor` and ensure that the `master.csv` file is created under `acm-inspector/output` as outlined [here](/README.md#to-run-this-using-your-own-python-env).
 1. **Step 2**: Navigate to the `acm-inspector/src` directory and run the following command:
    ```bash
    python -m analysis.entry
@@ -28,7 +28,7 @@ The analysis consists of the following steps:
 
 This document has explained the current steps for running the analysis. However, there are several potential enhancements or modifications to the process that could be explored in the future:
 
-1. **Can we run this from a containerized environment** so that users do not need a local Python environment (as demonstrated [here](./README.md#using-docker))?
+1. **Can we run this from a containerized environment** so that users do not need a local Python environment (as demonstrated [here](/README.md#using-docker))?
 1. **Can we trigger this analysis from the ACM User Interface** to make it more accessible for end-users?
 1. **Can we trigger the analysis through a Chat/LLM interface** with added context, allowing users to interact with the system conversationally?
 1. **Can we run this analysis on data gathered from external sources?** This would open the analysis to more diverse datasets.
