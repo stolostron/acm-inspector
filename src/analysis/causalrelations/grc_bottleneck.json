@@ -1,0 +1,5 @@
+{
+    "RateOfRootPolicySpecChange": ["RootPolicySpecCtrlResponse95Pctle", "ReplicatedPolicyCtrlResponse95Pctle"],
+    "RateOfPropagatedPolicyNonCompliance": ["ReplicatedPolicyCtrlResponse95Pctle", "RootPolicyStatusCtrlResponse95Pctle"]
+  }
+  

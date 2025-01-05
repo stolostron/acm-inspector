@@ -10,4 +10,6 @@ graphviz
 pymannkendall
 scikit-learn
 seaborn
+reportlab
+PyPDF2
 
