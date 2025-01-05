@@ -1,29 +1,38 @@
 # Analysis
-## Determine if the ACM hub is getting bottlenecked; if so why?
 
-- Through the analysis, we want to the return a Yes/No answer or as close to it as possible. 
-- And then we need to back it up by relevant charts / tables etc if needed. That is the exact goal of this analysis. 
-- We want to move away from the practice of showing lots of charts and tables to the user and let the user infer the result from it. 
+## Determine if the ACM hub is getting bottlenecked; if so, why?
 
-### Internal Steps of Analysis
+- The goal of this analysis is to return a **Yes/No** answer (or as close to it as possible) to the question: **"Is my ACM hub currently bottlenecked?"**
+- The conclusion will be backed up with relevant charts, tables, and supporting data as needed.
 
-1. We do the data collection, feature extraction, feature engineering etc to gather the right data. 
-1. We use the ACM Engineers domain knowledge to create the causal input at acm-inspector/src/analysis/causalrelations/*.json. [Here](./causalrelations/grc_bottleneck.json) is an example.
-1. We do the analysis based on the above 2 and create the results under acm-inspector/src/analysis/output
+We aim to move away from overwhelming users with a large number of charts and tables, which often requires them to have a deep understanding of how ACM works in order to draw accurate inferences. This current approach reduces the cognitive load on the user by providing high-level answers and supporting information.
 
-### Running the Analysis
-1. First run the acm-inspector/supervisor and make sure the master.csv is created under acm-inspector/output as mentioned [here](/README.md#to-run-this-using-your-own-python-env).
-1. Second `cd` to `acm-inspector/src` and run `python -m analysis.entry`
-1. High level results are printed out in the terminal. More detailed results are under acm-inspector/src/analysis/output
+## Internal Steps of Analysis
 
-### Delivery
-Above, we lay down how the analysis can be run today. This does not mean that this cannot be changed at a later point of time. Some of the possibilities could be:
-1. Can we run this from a container env, so that we do not need a local python environment ?
-1. Can we trigger this from ACM User Interface ?
-1. Can we trigger this through a Chat/LLM interaction with some additional context?
-1. Can we run this analysis on some other data gathered elsewhere ?
+The analysis consists of the following steps:
 
-The answer to all of the above is - yes, they are very much possible. But as first step, we are focussing on the basic building block now. Once these building blocks are done, they can be wrapped around in numerous ways and reusable across a number of scenarios.
+1. **Data Collection & Preparation**: First, we perform data collection, feature extraction, and feature engineering to gather the relevant data.
+1. **Causal Analysis**: Using ACM Engineers' domain knowledge, we create causal input files under `acm-inspector/src/analysis/causalrelations/*.json`. For example, you can see [here](./causalrelations/grc_bottleneck.json) an example of this.
+1. **Analysis Execution**: Using the above data and causal relations, we run the analysis. High-level results will be printed out in the terminal during the run. More detailed findings, including charts and tables, will be saved in the `acm-inspector/src/analysis/output` directory.
 
+## Running the Analysis
+
+1. **Step 1**: First, run the `acm-inspector/supervisor` and ensure that the `master.csv` file is created under `acm-inspector/output` as outlined [here](./README.md#to-run-this-using-your-own-python-env).
+1. **Step 2**: Navigate to the `acm-inspector/src` directory and run the following command:
+   ```bash
+   python -m analysis.entry
+   ```
+1. High level results are printed out in the terminal. More detailed results will be saved in `acm-inspector/src/analysis/output`
+
+## Delivery
+
+This document has explained the current steps for running the analysis. However, there are several potential enhancements or modifications to the process that could be explored in the future:
+
+1. **Can we run this from a containerized environment** so that users do not need a local Python environment (as demonstrated [here](./README.md#using-docker))?
+1. **Can we trigger this analysis from the ACM User Interface** to make it more accessible for end-users?
+1. **Can we trigger the analysis through a Chat/LLM interface** with added context, allowing users to interact with the system conversationally?
+1. **Can we run this analysis on data gathered from external sources?** This would open the analysis to more diverse datasets.
+
+The answer to all of the above is: **Yes, these enhancements are possible.** However, as a first step, we are focusing on establishing the basic building blocks. Once these are in place, the analysis can be easily extended and adapted to a variety of use cases.
 
 
