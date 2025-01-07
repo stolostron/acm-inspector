@@ -48,6 +48,7 @@ def main():
    
     createSubdir()
     mch = checkMCHStatus()
+    mce = checkMCEStatus()
     node = checkNodeStatus()
 
     if tsdb == "prom" : #if route is cluster prom

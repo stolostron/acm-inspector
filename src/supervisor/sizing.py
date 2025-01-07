@@ -120,7 +120,7 @@ def restartCount(pc):
     print("Checking if ACM pods are restarting frequently")
 
     try:
-        restart_data = pc.custom_query('sum(kube_pod_container_status_restarts_total{namespace=~"open-cluster-managemen.+",cluster="local-cluster"}) by (namespace,container) >0')
+        restart_data = pc.custom_query('sum(kube_pod_container_status_restarts_total{namespace=~"'+getACMNamespacesExpression()+'",cluster="local-cluster"}) by (namespace,container) >0')
         restart_data_df = MetricSnapshotDataFrame(restart_data);
         restart_data_df["value"]=restart_data_df["value"].astype(int)
         restart_data_df.rename(columns={"value": "RestartCount"}, inplace = True)
@@ -156,7 +156,7 @@ def checkContainerCount(pc):
 
     print("Checking number of Pods running in the ACM namespaces")
 
-    container_data = pc.custom_query('sum by (namespace) (kube_pod_info{namespace=~"open-cluster-managemen.+"})')
+    container_data = pc.custom_query('sum by (namespace) (kube_pod_info{namespace=~"'+getACMNamespacesExpression()+'"})')
 
     container_data_df = MetricSnapshotDataFrame(container_data);
     container_data_df["value"]=container_data_df["value"].astype(int)
