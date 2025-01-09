@@ -6,9 +6,12 @@ import datetime
 import pandas
 from analysis.utility.analytics import *
 from analysis.utility.causalExtractor import *
-from analysis.utility.results import *
+from analysis.utility.charting import *
 import json
 import importlib.resources
+
+
+results={}
 
 # Can we make this code generic?
 # We are almost there!! - There are 2 GRC specific things in this code:
@@ -20,10 +23,9 @@ import importlib.resources
 def startGRCAnalysis() :
 
     print("Starting GRC on the ACM Hub Analysis")
-    pdfFile = create_pdf(title="GRC Analysis")
-    causal_graph_grc_nx = getCausality()
+    causal_graph_grc_nx,causal_metricgv = getCausality()
     grc_df = loadData()
-    analyzeBottleneck(grc_df,causal_graph_grc_nx, pdfFile)
+    analyzeBottleneck(grc_df,causal_graph_grc_nx,causal_metricgv)
 
 def getCausality() :
     print("Loading GRC on the ACM Hub causal relationship")
@@ -35,9 +37,10 @@ def getCausality() :
 
     # Now `data` contains the dictionary from the JSON file
     print(data)
-    causal_graph_nx = getCausalGraph(data)
+    results["relationship"]=data
+    causal_graph_nx,causal_metricgv = getCausalGraph(data)
     print("Causal Graph created successfully")
-    return causal_graph_nx
+    return causal_graph_nx,causal_metricgv
 
 
 def loadData() :
@@ -69,40 +72,28 @@ def loadData() :
 
     return grc_df
 
-def generate_chart():
-    x = [1, 2, 3, 4, 5]
-    y = [1, 4, 9, 16, 25]
-    plt.plot(x, y)
-    plt.title("Sample Chart")
-    plt.xlabel("X Axis")
-    plt.ylabel("Y Axis")
-    tempPDFDir = get_output_directory()
-    chart_filename = tempPDFDir /"temp_chart.pdf"
 
-    plt.savefig(chart_filename, format='pdf')  # Save chart as PDF (temporary)
-    plt.close()
-    
-    return chart_filename
-
-
-def analyzeBottleneck(grc_df,causal_graph_grc_nx,pdfFile) :
+def analyzeBottleneck(grc_df,causal_graph_grc_nx,causal_metricgv) :
     print("----------------------------------------------------------")
     print("Running Bottleneck analysis for GRC on the ACM Hub data")
     print("----------------------------------------------------------")
 
-    all_metrics=getMetricList(causal_graph_grc_nx)
-    print("List of all metrics that are critical to the analysis: ", all_metrics)
+    allMetrics=getMetricList(causal_graph_grc_nx)
+    print("List of all metrics that are critical to the analysis: ", allMetrics)
+    results["allMetrics"]= allMetrics
 
     # List of leaf nodes/metrics thru which the bottlneck is seen 
     impactedMetricList = getImpactedMetricList(causal_graph_grc_nx)
-    print("List of all metrics that show if system is stalling (leaf nodes): ", impactedMetricList)
+    print("List of Health metrics that show if system is stalling : ", impactedMetricList)
+    results["impactedMetricList"]= impactedMetricList
 
     # and from that list, we can crawl to find out the metrics which causes the bottlenecks
-    fooList = getDriverMetricList(causal_graph_grc_nx)
-    print("List of all Metrics that drive the load on the system): ", fooList)
+    driverMetricList = getDriverMetricList(causal_graph_grc_nx)
+    print("List of Causal Metrics that drive the Health Metrics): ", driverMetricList)
+    results["driverMetricList"]=driverMetricList
     
     
-    columns = ['MetricName', 'TrendProblem', 'ThresholdProblem','DependsOn']
+    columns = ['MetricName', 'TrendProblem', 'ThresholdProblem','DependsOn','Bottleneck']
     
     conclusion_df = pandas.DataFrame(columns=columns)
 
@@ -115,36 +106,32 @@ def analyzeBottleneck(grc_df,causal_graph_grc_nx,pdfFile) :
         # - are there any abrupt changes in levels of data
         # - ability to forecast
         # Strength of association between the metrics - cause and effect
+        print(" ")
         trend=checkIfTrendIsRising(grc_df,metric)
         threshold=pctTimeValueIsHigh(grc_df, metric,0.5)
         depends = dependsOn(causal_graph_grc_nx,metric)
+        plot(grc_df,metric,0.5)
+        #correlationMatrix(grc_df, allMetrics)
+        scatterPlot(grc_df,metric, depends)
+        checkLinearity(grc_df, metric, depends)
+        runRegression(grc_df, metric, depends)
+        conclusion= metricBottleneck(trend,threshold)
+        changeLevelDetection(grc_df,metric)
+   
         
-        row = pandas.DataFrame([[metric, trend, threshold,depends]], columns=columns)
+        row = pandas.DataFrame([[metric, trend, threshold,depends,conclusion]], columns=columns)
         conclusion_df = pandas.concat([conclusion_df, row], ignore_index=True)
+        #results["metric"]={"trend": trend, "threshold": threshold, "dependsOn": depends}
+        results["conclusion"]={"conclusion_df contains the summary finding"}
     
-    # else this breaks saving the dataframe into pdf
-    conclusion_df['DependsOn'] = conclusion_df['DependsOn'].astype(str)
-
-    tempPDFDir = get_output_directory()
-    tempPDF = tempPDFDir /"temp.pdf"
-    tempTable = tempPDFDir /"table.pdf"
+    correlationMatrix(grc_df, allMetrics)
+   
     
-    add_text_to_pdf(tempPDF, "All is well")
-    merge_pdfs(pdfFile, tempPDF)
-    
-    add_dataframe_to_pdf(tempTable,conclusion_df)
-    merge_pdfs(pdfFile, tempTable)
-    
-    tempChart = generate_chart()
-    merge_pdfs(pdfFile, tempChart)
-
-    os.remove(tempPDF)
-    os.remove(tempTable)
-    os.remove(tempChart)
+    print(" ")
     
     print(" ")
     print("----------------------------------------------------------")
     print("In Conclusion...")    
     print(conclusion_df)
     print(" ")
-    print("Detailed Report in PDF is here: ", pdfFile)
+    summarizeBottleneck(conclusion_df)

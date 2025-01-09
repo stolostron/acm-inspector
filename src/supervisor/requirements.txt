@@ -12,4 +12,5 @@ scikit-learn
 seaborn
 reportlab
 PyPDF2
+ruptures
 

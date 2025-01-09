@@ -11,7 +11,8 @@ from reportlab.lib.styles import getSampleStyleSheet
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
-
+## THIS WILL BE REMOVED
+## BEING KEPT HERE JUST IN CASE
 
 def get_output_directory():
     # Get the current script's directory
@@ -61,26 +62,51 @@ def merge_pdfs(base_pdf, additional_pdf):
         base_writer.write(output_pdf)
 
 # Function to add text to a PDF
-def add_text_to_pdf(pdf_filename, text):
+# def add_text_to_pdf(pdf_filename, text):
 
-    # Convert Path to string if Posix Path object is being passed
-    pdf_filename=str(pdf_filename)
-    # Create a PDF document
-    document = SimpleDocTemplate(pdf_filename, pagesize=letter)
+#     # Convert Path to string if Posix Path object is being passed
+#     pdf_filename=str(pdf_filename)
+#     # Create a PDF document
+#     document = SimpleDocTemplate(pdf_filename, pagesize=letter)
     
-    # Set up a style for the text (can customize further)
-    styles = getSampleStyleSheet()
-    normal_style = styles['Normal']
+#     # Set up a style for the text (can customize further)
+#     styles = getSampleStyleSheet()
+#     normal_style = styles['Normal']
     
-    # Create a paragraph element for the text
-    text_paragraph = Paragraph(text, normal_style)
+#     # Create a paragraph element for the text
+#     text_paragraph = Paragraph(text, normal_style)
     
-    # Add the paragraph to the document with a spacer in between
-    story = [text_paragraph, Spacer(1, 12)]  # Spacer adds a gap after the text
+#     # Add the paragraph to the document with a spacer in between
+#     story = [text_paragraph, Spacer(1, 12)]  # Spacer adds a gap after the text
     
-    # Build the document
-    document.build(story)
+#     # Build the document
+#     document.build(story)
 
+# Function to add text to a PDF
+def add_text_to_pdf(pdf_filename, flowables):
+    """
+    Adds text and flowables (Paragraphs and Spacers) to a PDF file.
+    :param pdf_filename: Path to the output PDF file.
+    :param flowables: List of flowables (Paragraphs, Spacers, etc.)
+    """
+    # Ensure the filename is a string if a Path object is passed
+    if isinstance(pdf_filename, Path):
+        pdf_filename = str(pdf_filename)
+    
+    try:
+        # Create the PDF document
+        document = SimpleDocTemplate(pdf_filename, pagesize=letter)
+        
+        # Build the document with the flowables
+        document.build(flowables)
+
+        print(f"PDF created successfully at {pdf_filename}")
+        return pdf_filename  # Optionally return the path of the generated PDF
+
+    except Exception as e:
+        print(f"Error occurred while creating PDF: {e}")
+        return None  # Return None or handle the error as needed
+    
 # Function to add a DataFrame to a PDF as a table
 def add_dataframe_to_pdf(pdf_filename, df):
     # Convert the Path object to a string (in case it was passed as a Path)
@@ -129,3 +155,40 @@ def add_dataframe_to_pdf(pdf_filename, df):
     pdf_table = []
     pdf_table.append(table)
     document.build(pdf_table)
+
+def format_dict_to_string(d, indent=5):
+    """
+    Recursively formats a dictionary into a string.
+    
+    :param d: The dictionary to format.
+    :param indent: The current level of indentation (used for nested structures).
+    :return: A list of formatted `Paragraph` objects.
+    """
+    result = []
+    
+    for key, value in d.items():
+        # Create an indentation string based on the current depth
+        indent_str = "  " * indent
+        
+        # Add the key as a paragraph
+        key_paragraph = f"{indent_str}{key}:"
+        result.append(Paragraph(key_paragraph, getSampleStyleSheet()['Normal']))
+        
+        if isinstance(value, dict):
+            # Recursively handle nested dictionaries and add them as paragraphs
+            result.extend(format_dict_to_string(value, indent + 1))
+        elif isinstance(value, list):
+            # Handle lists and add items as separate paragraphs
+            for item in value:
+                result.append(Paragraph(f"{indent_str}- {item}", getSampleStyleSheet()['Normal']))
+        elif isinstance(value, bool):
+            # Format boolean values as 'True' or 'False'
+            result.append(Paragraph(f"{indent_str}{'True' if value else 'False'}", getSampleStyleSheet()['Normal']))
+        else:
+            # Add other types of values (numbers, strings) as paragraphs
+            result.append(Paragraph(f"{indent_str}{value}", getSampleStyleSheet()['Normal']))
+        
+        # Add a spacer after each key-value pair for readability
+        result.append(Spacer(1, 12))  # Adds a space between sections
+
+    return result

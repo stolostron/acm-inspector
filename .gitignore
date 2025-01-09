@@ -13,4 +13,5 @@ Makefile
 causal-analysis/.ipynb_checkpoints/
 **/.ipynb_checkpoints/
 *.pdf
+src/analysis/output/*.png
 
