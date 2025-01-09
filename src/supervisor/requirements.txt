@@ -13,4 +13,5 @@ seaborn
 reportlab
 PyPDF2
 ruptures
+statsmodels
 
