@@ -36,11 +36,11 @@ One of the main goals of this tool is to investigate around scaling ACM. Below i
 The big black dots are key drivers of ACM sizing along with the number of clusters it is managing. In other words, if we know the :
 - Num of apps & policies (ie how many applications and policies are defined on the cluster) and this depends on the cluster size. For the sake of brevity this node represents both applications and policies. So this works if there is only applications, or only policies or both. 
 - Time series count (depends on how large the cluster is and what kind of work is running on them)
-- Resoure count (depends on how large the cluster is and what kind of work is running on them)
+- Resource count (depends on how large the cluster is and what kind of work is running on them)
 ACM scaling model is `conditionally independent of the real cluster size`. Ofcourse the number of clusters is still important. You could appreciate that given this model, when we do real performance measurement, we can simulate/create a number of clusters with any size (could be kind cluster, could be Single Node OpenShift clusters) than clusters of specific sizes. It is much simpler to do the former instead of the latter.
 
 So, to trace one line of the flow end to end:
-`Num of apps & policies` drives the `API Server Object target count and size` which in turn drives load on the `ACM App & Policy Controllers`. The `ACM App & Policy Controllers` are also influenced by the `Cluster Count` - ie number of clusters - into which the applications and policies these have to be replicated to. These in turn creates resources on the `Kube API Server`. These resources are created in `etcd`. Therefore etcd health is one of the key drivers of `ACM Health`. And `etcd` health is also dependent on `Network health` and `Disk health`.
+`Num of apps & policies` drives the `API Server Object target count and size` which in turn drives load on the `ACM App & Policy Controllers`. The `ACM App & Policy Controllers` are also influenced by the `Cluster Count` - ie number of clusters - into which the applications and policies these have to be replicated to. These in turn create resources on the `Kube API Server`. These resources are created in `etcd`. Therefore etcd health is one of the key drivers of `ACM Health`. And `etcd` health is also dependent on `Network health` and `Disk health`.
 
 ## Work-in-Progress
 
