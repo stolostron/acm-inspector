@@ -289,7 +289,7 @@ def ACMMemUsageRSS(pc,startTime, endTime, step):
     print("Total ACM Memory (rss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"'+getACMNamespacesExpression()+'"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -297,7 +297,7 @@ def ACMMemUsageRSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMMemUsageRSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)',
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"'+getACMNamespacesExpression()+'"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -326,7 +326,7 @@ def ACMDetailMemUsageRSS(pc,startTime, endTime, step):
     print("Detailed ACM Memory (rss) usage GB")
 
     try:
-        acm_detail_cpu = pc.custom_query('(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)')
+        acm_detail_cpu = pc.custom_query('(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace))/(1024*1024*1024)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
@@ -334,7 +334,7 @@ def ACMDetailMemUsageRSS(pc,startTime, endTime, step):
         print(acm_detail_cpu_df[['namespace','ACMDetailMemUsageRSSGB']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
-        query='(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)',
+        query='(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace))/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -473,7 +473,7 @@ def ACMMemUsageWSS(pc,startTime, endTime, step):
     print("Total ACM Memory (wss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"'+getACMNamespacesExpression()+'"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -481,7 +481,7 @@ def ACMMemUsageWSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMMemUsageWSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"})/(1024*1024*1024)',
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"'+getACMNamespacesExpression()+'"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -510,7 +510,7 @@ def ACMDetailMemUsageWSS(pc,startTime, endTime, step):
     print("Detailed ACM Memory (wss) usage GB")
 
     try:
-        acm_detail_cpu = pc.custom_query('(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)')
+        acm_detail_cpu = pc.custom_query('(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace))/(1024*1024*1024)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
@@ -518,7 +518,7 @@ def ACMDetailMemUsageWSS(pc,startTime, endTime, step):
         print(acm_detail_cpu_df[['namespace','ACMDetailMemUsageWSSGB']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
-        query='(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace))/(1024*1024*1024)',
+        query='(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace))/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -694,7 +694,7 @@ def ACMOtherMemUsageRSS(pc,startTime, endTime, step):
     print("Total ACM Others Memory (rss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-management|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"'+getACMNamespacesExpressionNoObs()+'"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -702,7 +702,7 @@ def ACMOtherMemUsageRSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMOthMemUsageRSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)',
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace=~"'+getACMNamespacesExpressionNoObs()+'"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -731,7 +731,7 @@ def ACMOtherMemUsageWSS(pc,startTime, endTime, step):
     print("Total ACM Other Memory (wss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"'+getACMNamespacesExpressionNoObs()+'"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -739,7 +739,7 @@ def ACMOtherMemUsageWSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMOthMemUsageWSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})/(1024*1024*1024)',
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace=~"'+getACMNamespacesExpressionNoObs()+'"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -914,7 +914,7 @@ def ACMOCMDetailMemUsageRSS(pc,startTime, endTime, step):
     print("Detailed ACM Open cluster management Memory (rss) usage GB")
 
     try:
-        acm_detail_cpu = pc.custom_query('(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="open-cluster-management"}) by (container))/(1024*1024*1024)')
+        acm_detail_cpu = pc.custom_query('(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="'+getACMNamespace()+'"}) by (container))/(1024*1024*1024)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
@@ -922,7 +922,7 @@ def ACMOCMDetailMemUsageRSS(pc,startTime, endTime, step):
         print(acm_detail_cpu_df[['container','ACMOCMDetailMemUsageRSSGB']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
-        query='(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="open-cluster-management"}) by (container))/(1024*1024*1024)',
+        query='(sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", namespace="'+getACMNamespace()+'"}) by (container))/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -950,7 +950,7 @@ def ACMOCMDetailMemUsageWSS(pc,startTime, endTime, step):
     print("Detailed ACM Open cluster management Memory (wss) usage GB")
 
     try:
-        acm_detail_cpu = pc.custom_query('(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="open-cluster-management"}) by (container))/(1024*1024*1024)')
+        acm_detail_cpu = pc.custom_query('(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="'+getACMNamespace()+'"}) by (container))/(1024*1024*1024)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
@@ -958,7 +958,7 @@ def ACMOCMDetailMemUsageWSS(pc,startTime, endTime, step):
         print(acm_detail_cpu_df[['container','ACMOCMDetailMemUsageWSSGB']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
-        query='(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="open-cluster-management"}) by (container))/(1024*1024*1024)',
+        query='(sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container!="", image!="",namespace="'+getACMNamespace()+'"}) by (container))/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -986,7 +986,7 @@ def ACMSrcPGvMemUsageRSS(pc,startTime, endTime, step):
     print("Total ACM Search Postgres Memory (rss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", namespace="open-cluster-management"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", namespace="'+getACMNamespace()+'"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -994,7 +994,7 @@ def ACMSrcPGvMemUsageRSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMSearchPGMemUsageRSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", namespace="open-cluster-management"})/(1024*1024*1024)',
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", namespace="'+getACMNamespace()+'"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -1023,7 +1023,7 @@ def ACMOSrcPGMemUsageWSS(pc,startTime, endTime, step):
     print("Total ACM Search Postgres Memory (wss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", image!="",namespace="open-cluster-management"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", image!="",namespace="ocm"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -1031,7 +1031,7 @@ def ACMOSrcPGMemUsageWSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMSearchPGMemUsageWSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", image!="",namespace="open-cluster-management"})/(1024*1024*1024)',
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-postgres", image!="",namespace="ocm"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -1060,7 +1060,7 @@ def ACMSrcIdxvMemUsageRSS(pc,startTime, endTime, step):
     print("Total ACM Search Indexer Memory (rss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", namespace="open-cluster-management"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", namespace="ocm"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -1068,7 +1068,7 @@ def ACMSrcIdxvMemUsageRSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMSearchIdxMemUsageRSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", namespace="open-cluster-management"})/(1024*1024*1024)',
+        query='sum(container_memory_rss{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", namespace="ocm"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -1097,7 +1097,7 @@ def ACMOSrcIdxMemUsageWSS(pc,startTime, endTime, step):
     print("Total ACM Search Indexer Memory (wss) usage GB")
 
     try:
-        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", image!="",namespace="open-cluster-management"})/(1024*1024*1024)')
+        acm_cpu = pc.custom_query('sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", image!="",namespace="ocm"})/(1024*1024*1024)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -1105,7 +1105,7 @@ def ACMOSrcIdxMemUsageWSS(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMSearchIdxMemUsageWSSGB']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", image!="",namespace="open-cluster-management"})/(1024*1024*1024)',
+        query='sum(container_memory_working_set_bytes{job="kubelet", metrics_path="/metrics/cadvisor", cluster="", container="search-indexer", image!="",namespace="ocm"})/(1024*1024*1024)',
             start_time=startTime,
             end_time=endTime,
             step=step,

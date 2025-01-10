@@ -28,7 +28,7 @@ def checkNodeStatus(debug=False):
     #     print("%s\t%s\t%s" % (i.status.pod_ip, i.metadata.namespace, i.metadata.name))
 
     try:
-        nodes=v1.list_node(_request_timeout=1) 
+        nodes=v1.list_node(_request_timeout=10) 
         nodeDetailsList=[] 
         node_df = pandas.DataFrame()
         for node in nodes.items:
