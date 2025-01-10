@@ -15,6 +15,13 @@ The analysis consists of the following steps:
 1. **Causal Analysis**: Using ACM Engineers' domain knowledge, we create causal input files under `acm-inspector/src/analysis/causalrelations/*.json`. For example, you can see [here](./causalrelations/grc_bottleneck.json) an example of this.
 1. **Analysis Execution**: Using the above data and causal relations, we run the analysis. High-level results will be printed out in the terminal during the run. More detailed findings, including charts and tables, will be saved in the `acm-inspector/src/analysis/output` directory.
 
+```mermaid
+graph LR;
+    TimeSeriesData-->CausalAnalyzer;
+    DomainKnowledge/CausalGraph-->CausalAnalyzer;
+    CausalAnalyzer-->OutputWithReason;
+```
+
 ## Running the Analysis
 
 1. **Step 1**: First, run the `acm-inspector/supervisor` and ensure that the `master.csv` file is created under `acm-inspector/output` as outlined [here](/README.md#to-run-this-using-your-own-python-env).
