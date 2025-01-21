@@ -271,7 +271,7 @@ def ACMCPUUsage(pc,startTime, endTime, step):
     print("Total ACM CPU Core usage")
 
     try:
-        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"})')
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"'+getACMNamespacesExpression()+'"})')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -279,7 +279,7 @@ def ACMCPUUsage(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMCPUCoreUsage']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"})',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"'+getACMNamespacesExpression()+'"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -308,7 +308,7 @@ def ACMDetailCPUUsage(pc,startTime, endTime, step):
     print("Detailed ACM CPU Core usage")
 
     try:
-        acm_detail_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace)')
+        acm_detail_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
@@ -316,7 +316,7 @@ def ACMDetailCPUUsage(pc,startTime, endTime, step):
         print(acm_detail_cpu_df[['namespace','CPUCoreUsage']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-.+"}) by (namespace)',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -345,7 +345,7 @@ def OtherCPUUsage(pc,startTime, endTime, step):
     print("Total CPU Core usage - Other")
 
     try:
-        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})')
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"'+getACMNamespacesExpressionNoObs()+'"})')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -353,7 +353,7 @@ def OtherCPUUsage(pc,startTime, endTime, step):
         print(acm_cpu_df[['OtherCPUCoreUsage']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"})',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"'+getACMNamespacesExpression()+'|openshift-kube-apiserver|openshift-etcd"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -382,7 +382,7 @@ def OtherDetailCPUUsage(pc,startTime, endTime, step):
     print("Total CPU Core usage Detail - Other")
 
     try:
-        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)')
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"'+getACMNamespacesExpression()+'|openshift-kube-apiserver|openshift-etcd"}) by (namespace)')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -390,7 +390,7 @@ def OtherDetailCPUUsage(pc,startTime, endTime, step):
         print(acm_cpu_df[['namespace','OtherCPUCoreUsage']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"multicluster-engine|open-cluster-.+|openshift-kube-apiserver|openshift-etcd"}) by (namespace)',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace!~"'+getACMNamespacesExpression()+'|openshift-kube-apiserver|openshift-etcd"}) by (namespace)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -456,7 +456,7 @@ def ACMOtherCPUUsage(pc,startTime, endTime, step):
     print("Total ACM Other CPU Core usage")
 
     try:
-        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})')
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"'+getACMNamespacesExpressionNoObs()+'"})')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -464,7 +464,7 @@ def ACMOtherCPUUsage(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMOthCPUCoreUsage']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"multicluster-engine|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"})',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace=~"'+getACMNamespacesExpressionNoObs()+'"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -567,7 +567,7 @@ def ACMSrcPGCPUUsage(pc,startTime, endTime, step):
     print("Total ACM Search Postgres CPU Core usage")
 
     try:
-        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-postgres"})')
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="'+getACMNamespace()+'",container="search-postgres"})')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -575,7 +575,7 @@ def ACMSrcPGCPUUsage(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMSrcPGCPUCoreUsage']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-postgres"})',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="'+getACMNamespace()+'",container="search-postgres"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -604,7 +604,7 @@ def ACMSrcIdxCPUUsage(pc,startTime, endTime, step):
     print("Total ACM Search Indexer CPU Core usage")
 
     try:
-        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-indexer"})')
+        acm_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="'+getACMNamespace()+'",container="search-indexer"})')
 
         acm_cpu_df = MetricSnapshotDataFrame(acm_cpu)
         acm_cpu_df["value"]=acm_cpu_df["value"].astype(float)
@@ -612,7 +612,7 @@ def ACMSrcIdxCPUUsage(pc,startTime, endTime, step):
         print(acm_cpu_df[['ACMSrcIdxCPUCoreUsage']].to_markdown())
 
         acm_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management",container="search-indexer"})',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="'+getACMNamespace()+'",container="search-indexer"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -641,7 +641,7 @@ def ACMOCMDetailCPUUsage(pc,startTime, endTime, step):
     print("Detailed ACM Open CLuster Management CPU Core usage")
 
     try:
-        acm_detail_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management"}) by (container)')
+        acm_detail_cpu = pc.custom_query('sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="'+getACMNamespace()+'"}) by (container)')
 
         acm_detail_cpu_df = MetricSnapshotDataFrame(acm_detail_cpu)
         acm_detail_cpu_df["value"]=acm_detail_cpu_df["value"].astype(float)
@@ -649,7 +649,7 @@ def ACMOCMDetailCPUUsage(pc,startTime, endTime, step):
         print(acm_detail_cpu_df[['container','CPUCoreUsage']].to_markdown())
 
         acm_detail_cpu_trend = pc.custom_query_range(
-        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="open-cluster-management"}) by (container)',
+        query='sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace="'+getACMNamespace()+'"}) by (container)',
             start_time=startTime,
             end_time=endTime,
             step=step,

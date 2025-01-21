@@ -13,6 +13,21 @@ initialDF = pandas.DataFrame()
 masterDF = pandas.DataFrame()
 nodeDetails={}
 
+acmNamespace = "open-cluster-management"
+mceNamespace = "multicluster-engine"
+
+def getACMNamespace() :
+    global acmNamespace
+    return acmNamespace
+
+def getACMNamespacesExpression() :
+    global acmNamespace, mceNamespace
+    return mceNamespace+"|"+acmNamespace+"|open-cluster-managemen.+"
+
+def getACMNamespacesExpressionNoObs() :
+    global acmNamespace, mceNamespace
+    return mceNamespace+"|"+acmNamespace+"|open-cluster-management-agent.+|open-cluster-management-hub|open-cluster-management-addon.+"
+
 def setNodeDetails(details) :
     
     nodeDetails['numNodes']=details['numNodes']

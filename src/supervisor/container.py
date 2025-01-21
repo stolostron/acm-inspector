@@ -110,14 +110,14 @@ def restartCount(pc,startTime, endTime, step):
     print("Checking if ACM pods are restarting frequently")
 
     try:
-        restart_data = pc.custom_query('sum(kube_pod_container_status_restarts_total{namespace=~"multicluster-engine|open-cluster-managemen.+"}) by (namespace,container)')
+        restart_data = pc.custom_query('sum(kube_pod_container_status_restarts_total{namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace,container)')
         restart_data_df = MetricSnapshotDataFrame(restart_data)
         restart_data_df["value"]=restart_data_df["value"].astype(int)
         restart_data_df.rename(columns={"value": "RestartCount"}, inplace = True)
         print(restart_data_df[['container','namespace','RestartCount']].to_markdown())
 
         restart_data_trend = pc.custom_query_range(
-        query='sum(kube_pod_container_status_restarts_total{namespace=~"multicluster-engine|open-cluster-managemen.+"}) by (namespace)',
+        query='sum(kube_pod_container_status_restarts_total{namespace=~"'+getACMNamespacesExpression()+'"}) by (namespace)',
             start_time=startTime,
             end_time=endTime,
             step=step,
@@ -184,14 +184,14 @@ def checkContainerCount(pc,startTime, endTime, step):
     print("Checking number of Pods running in the ACM namespaces")
 
     try:
-        container_data = pc.custom_query('sum by (namespace) (kube_pod_info{namespace=~"open-cluster-managemen.+"})')
+        container_data = pc.custom_query('sum by (namespace) (kube_pod_info{namespace=~"'+getACMNamespacesExpression()+'"})')
         container_data_df = MetricSnapshotDataFrame(container_data)
         container_data_df["value"]=container_data_df["value"].astype(int)
         container_data_df.rename(columns={"value": "PodCount"}, inplace = True)
         print(container_data_df[['namespace','PodCount']].to_markdown())
 
         container_data_trend = pc.custom_query_range(
-        query='sum by (namespace) (kube_pod_info{namespace=~"open-cluster-managemen.+"})',
+        query='sum by (namespace) (kube_pod_info{namespace=~"'+getACMNamespacesExpression()+'"})',
             start_time=startTime,
             end_time=endTime,
             step=step,
