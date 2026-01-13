@@ -10,7 +10,12 @@ RUN microdnf update -y \
 COPY --from=builder /usr/bin/oc /usr/bin/oc
 
 COPY /src/supervisor/requirements.txt ./
-RUN pip3 install -r requirements.txt
+
+# Upgrade pip to get better wheel support
+RUN pip3 install --no-cache-dir --upgrade pip
+
+# Prefer binary wheels to avoid compilation
+RUN pip3 install --no-cache-dir --prefer-binary -r requirements.txt
 
 RUN mkdir acm-inspector
 

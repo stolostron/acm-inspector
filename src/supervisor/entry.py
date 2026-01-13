@@ -17,7 +17,7 @@ from colorama import Fore, Back, Style
 import urllib3
 import sys
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import os
 

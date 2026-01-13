@@ -1,5 +1,5 @@
 import os
-from prometheus_api_client import *
+from prometheus_api_client import PrometheusConnect
 from kubernetes import client, config
 import sys
 import datetime
